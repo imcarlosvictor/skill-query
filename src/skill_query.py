@@ -1,10 +1,10 @@
-import streamlit as st
+import dashboard
 
-
-
-st.title('Skill Query APP')
 
 def main():
-    print('hello world')
+    db = dashboard.Dashboard()
 
-main()
+
+
+if __name__ == '__main__':
+    main()
