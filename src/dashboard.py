@@ -11,9 +11,9 @@ class Dashboard:
     def __init__(self):
         # Increase the layout to span the entire screen
         st.set_page_config(layout='wide') 
-        self.CreateLayout()
+        self.create_layout()
 
-    def CreateLayout(self):
+    def create_layout(self):
         # Streamlit sidebar
         st.sidebar.title('Skill Query')
         # User inputs
@@ -93,7 +93,7 @@ class Dashboard:
 
                 st.altair_chart(c, use_container_width=True)
 
-    def PlotMapData(self):
+    def plot_map(self):
         # implement pydeck map
         st.map() 
 

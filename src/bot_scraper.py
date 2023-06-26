@@ -1,18 +1,22 @@
-class BotScraper:
+import scrapy
+
+
+class LinkedinSpider:
     def __init__(self):
+        self.name = 'Linkedin Spider'
+        self.start_url = ['https://www.linkedin.com/']
+
+    def scrape_tech(self):
         pass
 
-    def get_hard_skills(self):
+    def scrape_library(self):
         pass
         
-    def get_soft_skills(self):
+    def scrape_education(self):
         pass
 
-    def get_education(self):
+    def scrape_location(self):
         pass
 
-    def get_location(self):
-        pass
-
-    def get_date(self):
+    def scrape_date(self):
         pass
