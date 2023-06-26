@@ -1,4 +1,4 @@
-altair==5.0.1
+altair==5.0.0
 attrs==23.1.0
 Automat==22.10.0
 blinker==1.6.2
@@ -11,6 +11,7 @@ constantly==15.1.0
 cryptography==41.0.1
 cssselect==1.2.0
 decorator==5.1.1
+entrypoints==0.4
 filelock==3.12.2
 gitdb==4.0.10
 GitPython==3.1.31
