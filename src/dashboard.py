@@ -10,7 +10,7 @@ import json
 class Dashboard:
     def __init__(self):
         # Increase the layout to span the entire screen
-        st.set_page_config(layout='wide') 
+        st.set_page_config(page_title='Skill Query',layout='wide') 
         self.create_layout()
 
     def create_layout(self):
@@ -20,27 +20,37 @@ class Dashboard:
         job_role_input = st.sidebar.text_input(
             'Job Role',
             key='0',
-            placeholder='e.g. Software Engineer, Data Analyst, etc.',
+            placeholder='Software Engineer, Data Analyst',
         )
-        country_input = st.sidebar.text_input(
-            'Country',
+        experience_input = st.sidebar.text_input(
+            'Experience Level',
             key='1',
+            placeholder='Junior, Mid-Senior, Senior',
+        )
+        location_input = st.sidebar.text_input(
+            'Location',
+            key='2',
             placeholder='City, state, or Zip code',
         )
-        region_input = st.sidebar.text_input(
-            'Region',
-            key='2',
-        )
         # Search Button
-        st.sidebar.button('Apply')
+        apply_search_btn = st.sidebar.button('Apply')
+
+        # Create custom linkedin URL based on user inputs
+        if apply_search_btn:
+            # Format inputs for url construction
+            user_inputs = [input.lower() for input in [job_role_input, experience_input, location_input]]
+            user_inputs[0] = user_inputs[0].replace(' ', '-')
+            # Create url
+            URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs-{user_inputs[2]}'
+            print(URL)
 
         # Dashboard
         top_container = st.container()
-        top_container.write('container 1')
+        top_container.write('---------------------------------------------')
         with top_container:
             col1, col2 = st.columns([1,2],gap='large')
             with col1:
-                col1.header('Hard SKills')
+                col1.header('Technologies')
                 # TEMPORARY CHART 
                 chart_data = pd.DataFrame(
                     np.random.randn(20, 3),
@@ -52,15 +62,15 @@ class Dashboard:
                 st.altair_chart(c, use_container_width=True)
 
             with col2:
-                col2.header('Map Distribution')
-                self.PlotMapData()
+                col2.header('Job Opening Distribution')
+                # self.PlotMapData()
 
         bottom_container = st.container()
-        bottom_container.write('container 2')
+        bottom_container.write('---------------------------------------------')
         with bottom_container:
             col3, col4, col5 = st.columns(3,gap='large')
             with col3:
-                col3.header('Technologies')
+                col3.header('Libraries')
                 # TEMPORARY CHART 
                 chart_data = pd.DataFrame(
                     np.random.randn(20, 3),
