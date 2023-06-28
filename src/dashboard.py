@@ -39,62 +39,17 @@ class Dashboard:
 
         # Dashboard
         top_container = st.container()
-        top_container.write('---------------------------------------------')
         with top_container:
             col1, col2 = st.columns([1,2],gap='large')
-            with col1:
-                col1.header('Technologies')
-                # TEMPORARY CHART 
-                chart_data = pd.DataFrame(
-                    np.random.randn(20, 3),
-                    columns=['a', 'b', 'c'])
-
-                c = alt.Chart(chart_data).mark_circle().encode(
-                    x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-                st.altair_chart(c, use_container_width=True)
-
-            with col2:
-                col2.header('Job Opening Distribution')
-                # self.PlotMapData()
+            self.plot_technology_graph(col1)
+            self.plot_map(col2)
 
         bottom_container = st.container()
-        bottom_container.write('---------------------------------------------')
         with bottom_container:
             col3, col4, col5 = st.columns(3,gap='large')
-            with col3:
-                col3.header('Libraries')
-                # TEMPORARY CHART 
-                chart_data = pd.DataFrame(
-                    np.random.randn(20, 3),
-                    columns=['a', 'b', 'c'])
-
-                c = alt.Chart(chart_data).mark_circle().encode(
-                    x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-                st.altair_chart(c, use_container_width=True)
-            with col4:
-                col4.header('Education')
-                # TEMPORARY CHART 
-                chart_data = pd.DataFrame(
-                    np.random.randn(20, 3),
-                    columns=['a', 'b', 'c'])
-
-                c = alt.Chart(chart_data).mark_circle().encode(
-                    x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-                st.altair_chart(c, use_container_width=True)
-            with col5:
-                col5.header('Experience')
-                # TEMPORARY CHART 
-                chart_data = pd.DataFrame(
-                    np.random.randn(20, 3),
-                    columns=['a', 'b', 'c'])
-
-                c = alt.Chart(chart_data).mark_circle().encode(
-                    x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-                st.altair_chart(c, use_container_width=True)
+            self.plot_library_graph(col3)
+            self.plot_education_graph(col4)
+            self.plot_experience_graph(col5)
 
         # Create custom linkedin URL based on user inputs
         if apply_search_btn:
@@ -115,7 +70,66 @@ class Dashboard:
                 self.URL += '-jobs'
             print(self.URL)
 
-    def plot_map(self):
-        # implement pydeck map
-        st.map() 
+    def plot_map(self, col):
+        with col:
+            col.header('Job Opening Distribution')
+            # implement pydeck map
+            st.map() 
+
+    def plot_technology_graph(self, col):
+        with col:
+            col.header('Technologies')
+            # TEMPORARY CHART 
+            chart_data = pd.DataFrame(
+                np.random.randn(20, 3),
+                columns=['a', 'b', 'c'])
+
+            c = alt.Chart(chart_data).mark_circle().encode(
+                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
+
+            st.altair_chart(c, use_container_width=True)
+
+    def plot_library_graph(self, col):
+        with col:
+            col.header('Libraries')
+            # TEMPORARY CHART 
+            chart_data = pd.DataFrame(
+                np.random.randn(20, 3),
+                columns=['a', 'b', 'c'])
+
+            c = alt.Chart(chart_data).mark_circle().encode(
+                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
+
+            st.altair_chart(c, use_container_width=True)
+
+    def plot_education_graph(self, col):
+        with col:
+            col.header('Education')
+            # TEMPORARY CHART 
+            chart_data = pd.DataFrame(
+                np.random.randn(20, 3),
+                columns=['a', 'b', 'c'])
+
+            c = alt.Chart(chart_data).mark_circle().encode(
+                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
+
+            st.altair_chart(c, use_container_width=True)
+
+    def plot_experience_graph(self, col):
+        with col:
+            col.header('Experience')
+            # TEMPORARY CHART 
+            chart_data = pd.DataFrame(
+                np.random.randn(20, 3),
+                columns=['a', 'b', 'c'])
+
+            c = alt.Chart(chart_data).mark_circle().encode(
+                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
+
+            st.altair_chart(c, use_container_width=True)
+
+
+
+    def get_URL(self):
+        return self.URL
 
