@@ -35,14 +35,6 @@ class Dashboard:
         # Search Button
         apply_search_btn = st.sidebar.button('Apply')
 
-        # Create custom linkedin URL based on user inputs
-        if apply_search_btn:
-            # Format inputs for url construction
-            user_inputs = [input.lower() for input in [job_role_input, experience_input, location_input]]
-            user_inputs[0] = user_inputs[0].replace(' ', '-')
-            # Create url
-            URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs-{user_inputs[2]}'
-            print(URL)
 
         # Dashboard
         top_container = st.container()
@@ -102,6 +94,22 @@ class Dashboard:
                     x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
 
                 st.altair_chart(c, use_container_width=True)
+
+        # Create custom linkedin URL based on user inputs
+        if apply_search_btn:
+            # Format inputs for url construction
+            user_inputs = [input.lower() for input in [job_role_input, experience_input, location_input]]
+            user_inputs[0] = user_inputs[0].replace(' ', '-')
+            user_inputs[2] = user_inputs[2].replace(',', '-') if user_inputs[2].isspace() else user_inputs[2].replace(', ', '-')
+            user_inputs[2] = user_inputs[2].replace(',', '-') or user_inputs[2].replace(', ', '-')
+            # Create custom URL
+            if job_role_input:
+                URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}-jobs'
+                if experience_input:
+                    URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs'
+                    if location_input:
+                        URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs-{user_inputs[2]}'
+            print(URL)
 
     def plot_map(self):
         # implement pydeck map
