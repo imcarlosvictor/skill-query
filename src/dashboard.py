@@ -12,6 +12,7 @@ class Dashboard:
         # Increase the layout to span the entire screen
         st.set_page_config(page_title='Skill Query',layout='wide') 
         self.create_layout()
+        self.URL = ''
 
     def create_layout(self):
         # Streamlit sidebar
@@ -97,19 +98,22 @@ class Dashboard:
 
         # Create custom linkedin URL based on user inputs
         if apply_search_btn:
-            # Format inputs for url construction
+            # Format inputs for URL construction
             user_inputs = [input.lower() for input in [job_role_input, experience_input, location_input]]
+            # EXP input
             user_inputs[0] = user_inputs[0].replace(' ', '-')
-            user_inputs[2] = user_inputs[2].replace(',', '-') if user_inputs[2].isspace() else user_inputs[2].replace(', ', '-')
-            user_inputs[2] = user_inputs[2].replace(',', '-') or user_inputs[2].replace(', ', '-')
+            # Location input
+            user_inputs[2] = user_inputs[2].replace(' ', '').replace(',','-')
+
             # Create custom URL
             if job_role_input:
-                URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}-jobs'
+                self.URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}'
                 if experience_input:
-                    URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs'
-                    if location_input:
-                        URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}-jobs-{user_inputs[2]}'
-            print(URL)
+                    self.URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}'
+                if location_input:
+                    self.URL += '-' + user_inputs[2]
+                self.URL += '-jobs'
+            print(self.URL)
 
     def plot_map(self):
         # implement pydeck map
