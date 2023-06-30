@@ -128,8 +128,6 @@ class Dashboard:
 
             st.altair_chart(c, use_container_width=True)
 
-
-
     def get_URL(self):
         return self.URL
 

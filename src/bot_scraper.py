@@ -1,9 +1,12 @@
 import scrapy
 
 
-class LinkedinSpider(scrapy.Spider):
-    name = 'Linkedin Spider'
-    start_urls = ['https://www.linkedin.com/jobs/']
+class LinkedinScraper(scrapy.Spider):
+        name = 'Linkedin Spider'
+        start_urls = [self.URL]
+
+    def __init__(self, url):
+        self.URL = url
 
     def parse(self, response):
         pass
