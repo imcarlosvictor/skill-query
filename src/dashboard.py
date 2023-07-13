@@ -1,10 +1,12 @@
 import streamlit as st
-
-from urllib.request import urlopen
 import pandas as pd
 import numpy as np
 import altair as alt
 import json
+
+from urllib.request import urlopen
+from scraper.scraper.spiders.linkedin_spider import LinkedInSpider
+
 
 
 class Dashboard:

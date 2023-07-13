@@ -3,12 +3,11 @@ from pathlib import Path
 import scrapy
 
 
-class LinkedinSpider(scrapy.Spider):
-    name = "Linkedin Spider"
+class LinkedInSpider(scrapy.Spider):
+    name = "LinkedIn Spider"
 
     def start_requests(self):
-        #TODO: pass streamlit user URL here
-        urls = []
+        urls = ['https://www.linkedin.com/jobs/']
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 

@@ -1,6 +1,7 @@
 import scrapy
 
 
+
 class LinkedinScraper(scrapy.Spider):
         name = 'Linkedin Spider'
         start_urls = [self.URL]
