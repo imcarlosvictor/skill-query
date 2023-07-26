@@ -5,7 +5,7 @@ import altair as alt
 import json
 
 from urllib.request import urlopen
-from scraper.scraper.spiders.linkedin_spider import LinkedInSpider
+from scraper.scraper.spiders.linkedin_spider import LinkedinKeywordSpider
 
 
 
@@ -13,8 +13,9 @@ class Dashboard:
     def __init__(self):
         # Increase the layout to span the entire screen
         st.set_page_config(page_title='Skill Query',layout='wide') 
+        self.URL = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/'
         self.create_layout()
-        self.URL = ''
+        # api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/data-analyst-jobs-toronto-on?start=25
 
     def create_layout(self):
         # Streamlit sidebar
@@ -63,13 +64,22 @@ class Dashboard:
             user_inputs[2] = user_inputs[2].replace(' ', '').replace(',','-')
 
             # Create custom URL
+            # if job_role_input:
+            #     self.URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}'
+            #     if experience_input:
+            #         self.URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}'
+            #     if location_input:
+            #         self.URL += '-' + user_inputs[2]
+            #     self.URL += '?start=25'
+            # print(self.URL)
+
             if job_role_input:
-                self.URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}'
+                self.URL += user_inputs[0]
                 if experience_input:
-                    self.URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}'
+                    self.URL += '-' + user_inputs[1]
                 if location_input:
                     self.URL += '-' + user_inputs[2]
-                self.URL += '-jobs'
+                self.URL += '?start=25'
             print(self.URL)
 
     def plot_map(self, col):

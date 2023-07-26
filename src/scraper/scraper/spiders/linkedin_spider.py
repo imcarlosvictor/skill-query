@@ -1,36 +1,29 @@
-from pathlib import Path
-
 import scrapy
 
 
-class LinkedInSpider(scrapy.Spider):
-    name = "linkedin"
+class LinkedinKeywordSpider(scrapy.Spider):
+    name = "linkedin_posts"
+    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/software-engineer-jobs-toronto-on?start=25'
+
 
     def start_requests(self):
-        # urls = ['https://www.linkedin.com/jobs/']
-        # urls = ['https://www.linkedin.com/jobs/search?trk=guest_homepage-basic_guest_nav_menu_jobs&position=1&pageNum=0']
-        urls = ['https://www.linkedin.com/jobs/search?keywords=software+developer&location=Toronto%2C+Ontario%2C+Canada&geoId=100025096&trk=public_jobs_jobs-search-bar_search-submit']
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse)
+        first_job_on_page = 0
+        first_url = self.api_url + str(first_job_on_page)
+        yield scrapy.Request(url=first_url, callback=self.parse_keywords, meta={'first_job_on_page': first_job_on_page})
 
-    def parse(self, response):
-        job_listings = response.xpath('/html/body/div[1]/div/main')
-        xpath_results = response.xpath('//*[@id="main-content"]/section[2]/ul')
-        # xpath_listings = response.xpath('//*[@id="main-content"]/section[2]/ul/li[1]/div')
-        for posting in xpath_results:
-            link = posting.xpath('//*[@id="main-content"]/section/ul/li[1]/div/a').get()
-            job_title = posting.xpath('//*[@id="main-content"]/section/ul/li[1]/div/div[2]/h3').get()
-            company = posting.css('#main-content > section > ul > li:nth-child(1) > div > div.base-search-card__info > h4 > a').get()
-            company_link = posting.css('#main-content > section > ul > li:nth-child(1) > div > div.base-search-card__info > h4 > a').href()
-            location = posting.xpath('//*[@id="main-content"]/section/ul/li[1]/div/div[2]/div/span').get()
-            date_posted = posting.xpath('//*[@id="main-content"]/section/ul/li[1]/div/div[2]/div/time').get()
+    def parse_keywords(self, response):
+        jobs = response.css('li') # Job postings
 
-            job_post =  {
-                'link': link,
-                'job_title': job_title,
-                'company': company,
-                'company_link': company_link,
-                'location': location,
-                'date_posted': date_posted,
-            }
-            yield job_post
+        num_jobs_returned = len(jobs)
+        print("******* Num Jobs Returned *******")
+        print(num_jobs_returned)
+        print('*****')
+
+        job_item = {}
+        for job in jobs:
+            job_item['company'] = job.css('a::text').get(default='n/a').strip()
+            # job_item['company'] = job.css('hidden-nested-link').get(default='n/a').strip()
+            job_item['title'] = job.css('base-search-card__title').get(default='n/a').strip()
+            job_item['location'] = job.css('job-search-card__location').get(default='n/a').strip()
+            job_item['date_posted'] = job.css('time::text').get(default='n/a').strip()
+            yield job_item 
