@@ -2,8 +2,9 @@ import scrapy
 
 
 class LinkedinKeywordSpider(scrapy.Spider):
-    name = "linkedin_posts"
+    name = 'linkedin_posts'
     api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/software-engineer-jobs-toronto-on?start=25'
+    api_url_1 = 'https://ca.linkedin.com/jobs/search?keywords=Software+Developer&location=Toronto%2C+Ontario%2C+Canada&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit'
 
 
     def start_requests(self):
@@ -26,4 +27,4 @@ class LinkedinKeywordSpider(scrapy.Spider):
             job_item['title'] = job.css('base-search-card__title').get(default='n/a').strip()
             job_item['location'] = job.css('job-search-card__location').get(default='n/a').strip()
             job_item['date_posted'] = job.css('time::text').get(default='n/a').strip()
-            yield job_item 
+            yield job_item

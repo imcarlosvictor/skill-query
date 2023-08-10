@@ -12,13 +12,14 @@ from scraper.scraper.spiders.linkedin_spider import LinkedinKeywordSpider
 class Dashboard:
     def __init__(self):
         # Increase the layout to span the entire screen
-        st.set_page_config(page_title='Skill Query',layout='wide') 
-        self.URL = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/'
+        st.set_page_config(page_title='Skill Query',layout='wide')
+        self.URL = ''
         self.create_layout()
-        # api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/data-analyst-jobs-toronto-on?start=25
+        # self.URL_API = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/'
+        # linkedin_search_URL = 'https://ca.linkedin.com/jobs/search?keywords=software%20developer&location=toronto%2C%20ON&geoId=&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0'
 
     def create_layout(self):
-        # Streamlit sidebar
+        # ------------ Sidebar ------------
         st.sidebar.title('Skill Query')
         # User inputs
         job_role_input = st.sidebar.text_input(
@@ -40,7 +41,7 @@ class Dashboard:
         apply_search_btn = st.sidebar.button('Apply')
 
 
-        # Dashboard
+        # ------------ Dashboard ------------
         top_container = st.container()
         with top_container:
             col1, col2 = st.columns([1,2],gap='large')
@@ -57,36 +58,40 @@ class Dashboard:
         # Create custom linkedin URL based on user inputs
         if apply_search_btn:
             # Format inputs for URL construction
-            user_inputs = [input.lower() for input in [job_role_input, experience_input, location_input]]
+            # Role input
+            job_role_input = job_role_input.replace(' ', '+')
             # EXP input
-            user_inputs[0] = user_inputs[0].replace(' ', '-')
+            experience_input = experience_input.replace(' ', '+')
             # Location input
-            user_inputs[2] = user_inputs[2].replace(' ', '').replace(',','-')
+            location_input = location_input.replace(' ', '')
+
+            user_inputs = [input.lower() for input in [experience_input, job_role_input, location_input]]
 
             # Create custom URL
+            if job_role_input:
+                self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[1]}'
+                if experience_input:
+                    self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[0]}+{user_inputs[1]}'
+                if location_input:
+                    self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[0]}+{user_inputs[1]}&location={user_inputs[2]}'
+                self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit'
+            print(self.URL)
+
+            # create custom linkedin URL
             # if job_role_input:
-            #     self.URL = f'https://www.linkedin.com/jobs/{user_inputs[0]}'
+            #     self.URL += user_inputs[0]
             #     if experience_input:
-            #         self.URL = f'https://www.linkedin.com/jobs/{user_inputs[1]}-{user_inputs[0]}'
+            #         self.URL += '-' + user_inputs[1]
             #     if location_input:
             #         self.URL += '-' + user_inputs[2]
             #     self.URL += '?start=25'
             # print(self.URL)
 
-            if job_role_input:
-                self.URL += user_inputs[0]
-                if experience_input:
-                    self.URL += '-' + user_inputs[1]
-                if location_input:
-                    self.URL += '-' + user_inputs[2]
-                self.URL += '?start=25'
-            print(self.URL)
-
     def plot_map(self, col):
         with col:
             col.header('Job Opening Distribution')
             # implement pydeck map
-            st.map() 
+            st.map()
 
     def plot_technology_graph(self, col):
         with col:

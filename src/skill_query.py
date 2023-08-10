@@ -1,7 +1,7 @@
 import dashboard
 
 from search_pool import *
-from scraper.scraper.spiders.linkedin_spider import LinkedInSpider
+from scraper.scraper.spiders.linkedin_spider import LinkedinKeywordSpider
 
 def main():
     db = dashboard.Dashboard()
