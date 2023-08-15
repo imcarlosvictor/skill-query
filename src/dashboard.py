@@ -5,8 +5,10 @@ import altair as alt
 import json
 
 from urllib.request import urlopen
-from scraper.scraper.spiders.linkedin_spider import LinkedinKeywordSpider
+from scrapy.crawler import CrawlerProcess
+from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
 
+import spider
 
 
 class Dashboard:
@@ -15,8 +17,6 @@ class Dashboard:
         st.set_page_config(page_title='Skill Query',layout='wide')
         self.URL = ''
         self.create_layout()
-        # self.URL_API = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/'
-        # linkedin_search_URL = 'https://ca.linkedin.com/jobs/search?keywords=software%20developer&location=toronto%2C%20ON&geoId=&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0'
 
     def create_layout(self):
         # ------------ Sidebar ------------
@@ -57,35 +57,26 @@ class Dashboard:
 
         # Create custom linkedin URL based on user inputs
         if apply_search_btn:
-            # Format inputs for URL construction
             # Role input
             job_role_input = job_role_input.replace(' ', '+')
             # EXP input
             experience_input = experience_input.replace(' ', '+')
             # Location input
             location_input = location_input.replace(' ', '')
-
+            # Format inputs for URL construction
             user_inputs = [input.lower() for input in [experience_input, job_role_input, location_input]]
 
             # Create custom URL
             if job_role_input:
-                self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[1]}'
+                self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[1]}'
                 if experience_input:
-                    self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[0]}+{user_inputs[1]}'
+                    self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[0]}+{user_inputs[1]}'
                 if location_input:
-                    self.URL = f'https://ca.linkedin.com/jobs/search?keywords={user_inputs[0]}+{user_inputs[1]}&location={user_inputs[2]}'
-                self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit'
-            print(self.URL)
+                    self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[0]}+{user_inputs[1]}&location={user_inputs[2]}'
+                self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
-            # create custom linkedin URL
-            # if job_role_input:
-            #     self.URL += user_inputs[0]
-            #     if experience_input:
-            #         self.URL += '-' + user_inputs[1]
-            #     if location_input:
-            #         self.URL += '-' + user_inputs[2]
-            #     self.URL += '?start=25'
-            # print(self.URL)
+            # update url in linkedin spider
+            spider.crawl_linkedin(self.URL)
 
     def plot_map(self, col):
         with col:
@@ -144,7 +135,3 @@ class Dashboard:
                 x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
 
             st.altair_chart(c, use_container_width=True)
-
-    def get_URL(self):
-        return self.URL
-
