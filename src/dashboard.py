@@ -2,13 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
+import threading
 import json
-
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
-from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
 
 import spider
+from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
+
 
 
 class Dashboard:
@@ -75,8 +76,10 @@ class Dashboard:
                     self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[0]}+{user_inputs[1]}&location={user_inputs[2]}'
                 self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
-            # update url in linkedin spider
-            spider.crawl_linkedin(self.URL)
+            ############ Call Spider ############
+            t1 = threading.Thread(spider.start_linkedin_spider(self.URL),10)
+            t1.start()
+            #####################################
 
     def plot_map(self, col):
         with col:
