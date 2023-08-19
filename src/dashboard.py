@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import altair as alt
 import threading
+import subprocess
 import json
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
@@ -77,8 +78,11 @@ class Dashboard:
                 self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
             ############ Call Spider ############
-            t1 = threading.Thread(spider.start_linkedin_spider(self.URL),10)
-            t1.start()
+            # Threading
+            # t1 = threading.Thread(spider.start_spider(self.URL),10)
+            # t1.start()
+            # CrawlerRunner
+            spider.start_crawler(self.URL)
             #####################################
 
     def plot_map(self, col):
