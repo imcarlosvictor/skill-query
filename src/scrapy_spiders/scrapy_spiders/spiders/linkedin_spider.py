@@ -1,27 +1,33 @@
 import os
 import sys
 import json
+from datetime import datetime
+
 import w3lib.html
 import scrapy
 from scrapy.spiders import CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 
+
+# set path
 FILENAME = __file__
 DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
-DATA_EXTRACT_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, '../../../data_extracts'))
-DATA_FILE = f'{DATA_EXTRACT_DIR}/data_links.csv'
+EXPORT_FEED_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, '../../../export_feed'))
 
 
 class LinkedinSpider(scrapy.Spider):
-    """Extract keywords from the job description for data visualization."""
+    """
+    Scrape all job links from the given URL and store the data collected in a file.
+    """
 
     name = 'linkedin_spider'
-    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=junior+software+engineer&location=toronto&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum'
-    # api_url = ''
+    api_url = ''
 
     custom_settings = {
         'FEEDS': {
-            DATA_FILE: {'format': 'csv'}
+            f'{EXPORT_FEED_DIR}/%(name)s/%(name)s_%(time)s.csv': {
+                'format': 'csv',
+            }
         }
     }
 
@@ -54,23 +60,3 @@ class LinkedinSpider(scrapy.Spider):
             first_job_on_page = int(first_job_on_page) + 25
             next_url = self.api_url + str(first_job_on_page)
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
-
-    def get_job_details(self):
-        """
-        Extract data from job links.
-        """
-
-        # job_link_file = '/home/lucas/Documents/code/projects/python/skill-query/src/src/scrapy_spiders/data_extract/job_links.json'
-        # with open(job_link_file, 'r') as f:
-        #     for link in f:
-        #         print(link)
-
-        job_description = response.css('div.show-more-less-html__markup').get()
-        output = w3lib.html.remove_tags(job_description)
-
-        yield {
-            'role': response.css('h1::text').get().strip(),
-            'seniority_level' : response.css('span.description__job-criteria-text::text').get().strip(),
-            'employment_type' : response.css('span.description__job-criteria-text').get().strip(),
-            'description' : output
-        }

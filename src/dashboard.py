@@ -2,14 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import threading
 import subprocess
 import json
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
 
-import spider
 from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
+from scrapy_spiders import run_spider
 
 
 
@@ -78,11 +77,8 @@ class Dashboard:
                 self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
             ############ Call Spider ############
-            # Threading
-            # t1 = threading.Thread(spider.start_spider(self.URL),10)
-            # t1.start()
             # CrawlerRunner
-            spider.start_crawler(self.URL)
+            run_spider.start_spider(self.URL, job_role_input)
             #####################################
 
     def plot_map(self, col):
