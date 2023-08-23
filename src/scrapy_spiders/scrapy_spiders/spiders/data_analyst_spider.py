@@ -15,20 +15,21 @@ DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
 EXPORT_FEED_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, '../../../export_feed'))
 
 
-class LinkedinSpider(scrapy.Spider):
+class DataAnalystSpider(scrapy.Spider):
     """
     Scrape all job links from the given URL and store the data collected in a file.
     """
 
-    name = 'linkedin_spider'
-    api_url = ''
+    name = 'DA_spider'
+    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=data+analyst&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum'
 
     custom_settings = {
         'FEEDS': {
             f'{EXPORT_FEED_DIR}/%(name)s/%(name)s_%(time)s.csv': {
-                'format': 'csv',
-            }
-        }
+                'format': 'csv'
+            },
+        },
+        'DOWNLOAD_DELAY': 0.9,
     }
 
     def start_requests(self):
@@ -59,4 +60,5 @@ class LinkedinSpider(scrapy.Spider):
         if num_jobs_returned > 0:
             first_job_on_page = int(first_job_on_page) + 25
             next_url = self.api_url + str(first_job_on_page)
+            # Controlled paging logic
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})

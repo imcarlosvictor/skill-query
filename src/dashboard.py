@@ -7,8 +7,9 @@ import json
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
 
-from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
 from scrapy_spiders import run_spider
+from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider
+from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider
 
 
 
@@ -78,7 +79,7 @@ class Dashboard:
 
             ############ Call Spider ############
             # CrawlerRunner
-            run_spider.start_spider(self.URL, job_role_input)
+            run_spider.start_spider()
             #####################################
 
     def plot_map(self, col):

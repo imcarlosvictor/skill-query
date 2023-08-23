@@ -1,6 +1,5 @@
 import dashboard
 from search_pool import *
-from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import LinkedinSpider
 
 
 def main():
