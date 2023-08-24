@@ -1,0 +1,56 @@
+import os
+import sys
+import json
+import scrapy
+from scrapy.crawler import CrawlerRunner, CrawlerProcess
+from scrapy.utils.log import configure_logging
+from scrapy.utils.project import get_project_settings
+from twisted.internet import reactor, defer
+from datetime import datetime
+
+from scrapy_spiders.spiders.linkedin_spider import SoftwareEngineerSpider, DataAnalystSpider
+
+
+
+def start_spider():
+    # create crawler
+    settings = get_project_settings()
+    configure_logging(settings)
+    runner = CrawlerRunner(settings)
+    crawler = runner.crawl(SoftwareEngineerSpider)
+    # crawler = runner.crawl(DataAnalystSpider)
+    # end process by asking the reactor to stop itself
+    crawler.addBoth(lambda _: reactor.stop())
+    # start up the Twisted reactor (event) loop handler) manually
+    reactor.run()
+
+def run_spider():
+    """
+    Start both spiders
+    """
+    configure_logging()
+    settings = get_project_settings()
+    runner = CrawlerRunner(settings)
+    # crawl linkedin spider
+    runner.crawl(SoftwareEngineerSpider)
+    runner.crawl(DataAnalystSpider)
+    d = runner.join()
+    d.addBoth(lambda _: reactor.stop())
+    reactor.run()
+
+
+# @defer.inlineCallbacks
+# def run_spider():
+#     """
+#     Start both spiders
+#     """
+#     settings = get_project_settings()
+#     configure_logging(settings)
+#     runner = CrawlerRunner(settings)
+#     # crawl linkedin spider
+#     yield runner.crawl(SoftwareEngineerSpider)
+#     yield runner.crawl(DataAnalystSpider)
+#     reactor.stop()
+
+run_spider()
+reactor.run()

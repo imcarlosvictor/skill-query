@@ -8,25 +8,22 @@ from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor, defer
 from datetime import datetime
 
-from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider
-from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider
+from scrapy_spiders.spiders.linkedin_spider import SoftwareEngineerSpider, DataAnalystSpider
 
 
-def get_time():
+
+@defer.inlineCallbacks
+def run_spider():
     """
-    Get current date and time.
+    Start both spiders
     """
-    now = datetime.now()
-    return now.strftime('%d%m%Y_%H%M%S') # Format: DDMMYY_HHMMSS
-
-def start_spider():
-    # create crawler
     settings = get_project_settings()
     configure_logging(settings)
     runner = CrawlerRunner(settings)
-    crawler = runner.crawl(SoftwareEngineerSpider)
-    # crawler = runner.crawl(DataAnalystSpider)
-    # end process by asking the reactor to stop itself
-    crawler.addBoth(lambda _: reactor.stop())
-    # start up the Twisted reactor (event) loop handler) manually
-    reactor.run()
+    # crawl linkedin spider
+    yield runner.crawl(SoftwareEngineerSpider)
+    yield runner.crawl(DataAnalystSpider)
+    reactor.stop()
+
+run_spider()
+reactor.run()
