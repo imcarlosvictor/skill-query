@@ -44,6 +44,7 @@ class DataAnalystSpider(scrapy.Spider):
         """
         first_job_on_page = response.meta['first_job_on_page']
         jobs = response.css('li') # Job postings
+        num_jobs_returned = len(jobs)
 
         job_links = {}
         for job in jobs:
@@ -63,7 +64,6 @@ class DAPostSpider(scrapy.Spider):
     """
     def __init__(self):
         self.name = 'DA_post_spider'
-        self.export_feed_path = f'{EXPORT_FEED_DIR}/DA_role_spider/2023-08-24T10-41-11.csv'
         self.urls = []
 
     custom_settings = {
@@ -75,9 +75,11 @@ class DAPostSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        with open(self.export_feed_path, 'rt') as f:
+        # get latest extract file
+        extract_target_file = self.get_latest_file_extract()
+        with open(extract_target_file, 'rt') as f:
             self.urls = [url.strip() for url in f.readlines()]
-
+        # scrape through links
         for url in self.urls[1:]:
             yield scrapy.Request(url=url, callback=self.parse_posts)
 
@@ -100,3 +102,19 @@ class DAPostSpider(scrapy.Spider):
             'employment_type' : employment_level_no_tage,
             'job_description' : job_description_no_tags 
         }
+
+    def get_latest_file_extract(self):
+        """
+        Find the most recent extract in the directory.
+        """
+        # get current date
+        current_date = datetime.date.today()
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_role_spider/'
+        # find file path of latest extract to scrape
+        extract_target_file = ''
+        for file in os.listdir(swe_export_feed_directory):
+            if (file[:10] == str(current_date)):
+                target_file = os.path.join(swe_export_feed_directory, file)
+                if os.path.isfile(target_file):
+                    extract_target_file = target_file
+        return extract_target_file

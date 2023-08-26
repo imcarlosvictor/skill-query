@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from datetime import datetime
+import datetime
 
 import w3lib.html
 import scrapy
@@ -45,6 +45,7 @@ class SoftwareEngineerSpider(scrapy.Spider):
 
         first_job_on_page = response.meta['first_job_on_page']
         jobs = response.css('li') # Job postings
+        num_jobs_returned = len(jobs)
 
         job_links = {}
         for job in jobs:
@@ -64,7 +65,6 @@ class SWEPostSpider(scrapy.Spider):
     """
     def __init__(self):
         self.name = 'SWE_post_spider'
-        self.export_feed_path = f'{EXPORT_FEED_DIR}/SWE_role_spider/2023-08-24T10-41-11.csv'
         self.urls = []
 
     custom_settings = {
@@ -72,11 +72,14 @@ class SWEPostSpider(scrapy.Spider):
             f'{EXPORT_FEED_DIR}/%(name)s/%(time)s.json': {
                 'format': 'json',
             }
-        }
+        },
+        'DOWNLOAD_DELAY': 1.4,
     }
 
     def start_requests(self):
-        with open(self.export_feed_path, 'rt') as f:
+        # get the latest extract file from the export feed directory
+        extract_target_file = self.get_latest_file_extract()
+        with open(extract_target_file, 'rt') as f:
             self.urls = [url.strip() for url in f.readlines()]
 
         for url in self.urls[1:]:
@@ -99,5 +102,22 @@ class SWEPostSpider(scrapy.Spider):
             'role': response.css('h1::text').get().strip(),
             'seniority_level' : seniority_level_no_tags,
             'employment_type' : employment_level_no_tage,
-            'job_description' : job_description_no_tags 
+            'job_description' : job_description_no_tags
         }
+
+    def get_latest_file_extract(self):
+        """
+        Find the most recent extract in the directory.
+        """
+        # get current date
+        current_date = datetime.date.today()
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_role_spider/'
+        # find file path of latest extract to scrape
+        extract_target_file = ''
+        for file in os.listdir(swe_export_feed_directory):
+            if (file[:10] == str(current_date)):
+                target_file = os.path.join(swe_export_feed_directory, file)
+                if os.path.isfile(target_file):
+                    extract_target_file = target_file
+        print(extract_target_file)
+        return extract_target_file
