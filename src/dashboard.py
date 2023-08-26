@@ -8,8 +8,7 @@ from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
 
 from scrapy_spiders import run_spider
-from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider
-from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider
+from scrapy_spiders.scrapy_spiders.spiders.linkedin_spider import SoftwareEngineerSpider, DataAnalystSpider
 
 
 
@@ -21,29 +20,23 @@ class Dashboard:
         self.create_layout()
 
     def create_layout(self):
-        # ------------ Sidebar ------------
+        # ############ Sidebar ############
         st.sidebar.title('Skill Query')
-        # User inputs
-        job_role_input = st.sidebar.text_input(
+
+        job_role_option = st.sidebar.selectbox(
             'Job Role',
-            key='0',
-            placeholder='Software Engineer, Data Analyst',
+            ('Software Engineer', 'Data Analyst')
         )
-        experience_input = st.sidebar.text_input(
-            'Experience Level',
-            key='1',
-            placeholder='Junior, Mid-Senior, Senior',
-        )
-        location_input = st.sidebar.text_input(
+
+        location_option = st.sidebar.selectbox(
             'Location',
-            key='2',
-            placeholder='City, state, or Zip code',
+            ('Canada', 'USA')
         )
-        # Search Button
-        apply_search_btn = st.sidebar.button('Apply')
+
+        search_btn = st.sidebar.button('Show', use_container_width=True)
 
 
-        # ------------ Dashboard ------------
+        # ############ Dashboard ############
         top_container = st.container()
         with top_container:
             col1, col2 = st.columns([1,2],gap='large')
@@ -57,30 +50,10 @@ class Dashboard:
             self.plot_education_graph(col4)
             self.plot_experience_graph(col5)
 
-        # Create custom linkedin URL based on user inputs
-        if apply_search_btn:
-            # Role input
-            job_role_input = job_role_input.replace(' ', '+')
-            # EXP input
-            experience_input = experience_input.replace(' ', '+')
-            # Location input
-            location_input = location_input.replace(' ', '')
-            # Format inputs for URL construction
-            user_inputs = [input.lower() for input in [experience_input, job_role_input, location_input]]
 
-            # Create custom URL
-            if job_role_input:
-                self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[1]}'
-                if experience_input:
-                    self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[0]}+{user_inputs[1]}'
-                if location_input:
-                    self.URL = f'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={user_inputs[0]}+{user_inputs[1]}&location={user_inputs[2]}'
-                self.URL += '&geoId=100761630&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
-
-            ############ Call Spider ############
-            # CrawlerRunner
-            run_spider.start_spider()
-            #####################################
+        ############ Call Spider ############
+        # run_spider.start_spider()
+        #####################################
 
     def plot_map(self, col):
         with col:
