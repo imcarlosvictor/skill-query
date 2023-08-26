@@ -8,24 +8,23 @@ from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor, defer
 from datetime import datetime
 
-from .scrapy_spiders.spiders.linkedin_spider import SoftwareEngineerSpider, DataAnalystSpider
-from .scrapy_spiders.spiders.job_post_spider import SWEPostSpider, DAPostSpider
+from .scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider 
+from .scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider 
 
 
 
-def create_reactor(function):
+def reactor_manager(function):
     def wrapper():
         function()
         reactor.run()
     return wrapper
 
-@create_reactor
+@reactor_manager
 @defer.inlineCallbacks
-def run_linkedin_spider():
+def run_link_extract_spider():
     """
     Start both spiders
     """
-
     # Configure settings
     settings = get_project_settings()
     configure_logging(settings)
@@ -36,18 +35,19 @@ def run_linkedin_spider():
     reactor.stop()
 
 
-@create_reactor
+@reactor_manager
 @defer.inlineCallbacks
 def run_job_post_spider():
     """
     Start both spiders
     """
-
     # Configure settings
     settings = get_project_settings()
     configure_logging(settings)
     runner = CrawlerRunner(settings)
     # Start spider
+    # yield runner.crawl(SWEPostSpider)
     yield runner.crawl(DAPostSpider)
     reactor.stop()
 
+run_job_post_spider()
