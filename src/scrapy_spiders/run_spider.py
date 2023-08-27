@@ -34,7 +34,6 @@ def run_link_extract_spider():
     yield runner.crawl(DataAnalystSpider)
     reactor.stop()
 
-# run_link_extract_spider()
 
 @reactor_manager
 @defer.inlineCallbacks
@@ -51,7 +50,7 @@ def run_job_post_spider():
     # yield runner.crawl(DAPostSpider)
     reactor.stop()
 
+# run_link_extract_spider()
 run_job_post_spider()
-
 # s = SWEPostSpider()
-# s.get_latest_file_extract()
+# s.parse_posts()

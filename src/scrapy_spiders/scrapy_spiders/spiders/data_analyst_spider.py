@@ -87,21 +87,61 @@ class DAPostSpider(scrapy.Spider):
         """
         Extract data from job links.
         """
-        seniority_level = response.css('span.description__job-criteria-text::text').get().strip()
-        seniority_level_no_tags = w3lib.html.remove_tags(seniority_level)
+        ##############################################
+        # Get Data
+        job_role  = response.css('h1::text').get()
+        job_role_clean = self.clean_text(job_role)
 
-        employment_level = response.css('span.description__job-criteria-text').get().strip()
-        employment_level_no_tage = w3lib.html.remove_tags(employment_level)
+        seniority_level = response.css('span.description__job-criteria-text::text').get()
+        seniority_level_clean = self.clean_text(seniority_level)
 
-        job_description = response.css('div.show-more-less-html__markup').get()
-        job_description_no_tags = w3lib.html.remove_tags(job_description)
+        employment_level = response.css('span.description__job-criteria-text::text').get()
+        employment_level_clean = self.clean_text(employment_level)
+
+        ##############################################
+        ##############################################
+        # Extract keywords for tables
+        job_description = response.css('div.show-more-less-html__markup ul li::text').getall()
+        technologies = {
+            'python': 0,
+            'r': 0,
+            'java': 0,
+            'scala': 0,
+            'matlab': 0,
+            'sql': 0,
+            'nosql': 0,
+            'linux': 0,
+            'jupyter': 0,
+            'tableau': 0,
+            'bi': 0,
+            'apache': 0,
+            'sas': 0,
+            'excel': 0,
+        }
+
+        for list in job_description:
+            new_list = list.split()
+            for word in new_list:
+               if word.lower() in technologies.keys():
+                   technologies[word.lower()] += 1
+        ##############################################
 
         yield {
-            'role': response.css('h1::text').get().strip(),
-            'seniority_level' : seniority_level_no_tags,
-            'employment_type' : employment_level_no_tage,
-            'job_description' : job_description_no_tags 
+            'role': job_role_clean,
+            'seniority_level' : seniority_level_clean,
+            'employment_type' : employment_level_clean,
+            'tech_keyword_count': technologies,
         }
+
+    def clean_text(self, text):
+        """
+        Remove html tags from string.
+        """
+        html_pattern = re.compile('<.*?>')
+        no_tag_text = re.sub(html_pattern, '', text)
+        clean_text = re.sub('\n', '', no_tag_text)
+        clean_text = clean_text.strip()
+        return clean_text
 
     def get_latest_file_extract(self):
         """
