@@ -102,7 +102,7 @@ class DAPostSpider(scrapy.Spider):
         ##############################################
         # Extract keywords for tables
         job_description = response.css('div.show-more-less-html__markup ul li::text').getall()
-        technologies = {
+        technology = {
             'python': 0,
             'r': 0,
             'java': 0,
@@ -124,13 +124,60 @@ class DAPostSpider(scrapy.Spider):
             for word in new_list:
                if word.lower() in technologies.keys():
                    technologies[word.lower()] += 1
+
+        ##############################################
+        # library keyword extract 
+        library = {
+            'tensorflow': 0,
+            'pytorch': 0,
+            'theano': 0,
+            'opencv': 0,
+            'requests': 0,
+            'scikit-learn': 0,
+            'numpy': 0,
+            'keras': 0,
+            'scipy': 0,
+            'pandas': 0,
+            'requests': 0,
+            'pillow': 0,
+            'scrapy': 0,
+            'selenium': 0,
+            'kivy': 0,
+            'theano': 0,
+            'matplotlib': 0,
+            'seaborn': 0,
+            'beautifulsoup': 0,
+        }
+
+        for list in job_description:
+            new_list = list.split()
+            for word in new_list:
+               if word.lower() in libraries.keys():
+                   libraries[word.lower()] += 1
+
+        ##############################################
+        # Education keyword extract
+        education = {
+            'bachelor': 0,
+            'masters': 0,
+            'phd': 0,
+        }
+
+        for list in job_description:
+            new_list = list.split()
+            for word in new_list:
+               if word.lower() in education.keys():
+                   education[word.lower()] += 1
+        ##############################################
         ##############################################
 
         yield {
             'role': job_role_clean,
             'seniority_level' : seniority_level_clean,
             'employment_type' : employment_level_clean,
-            'tech_keyword_count': technologies,
+            'tech_keyword_count': technology,
+            'library_keyword_count': library,
+            'education_keyword_count': education,
         }
 
     def clean_text(self, text):
