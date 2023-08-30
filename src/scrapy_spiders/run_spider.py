@@ -8,8 +8,8 @@ from scrapy.utils.project import get_project_settings
 from twisted.internet import reactor, defer
 from datetime import datetime
 
-from scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider 
-from scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider 
+from .scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider 
+from .scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider 
 
 
 
@@ -33,7 +33,7 @@ def run_link_extract_spider():
     yield runner.crawl(SoftwareEngineerSpider)
     yield runner.crawl(DataAnalystSpider)
     reactor.stop()
-
+# run_link_extract_spider()
 
 @reactor_manager
 @defer.inlineCallbacks
@@ -49,8 +49,6 @@ def run_job_post_spider():
     yield runner.crawl(SWEPostSpider)
     # yield runner.crawl(DAPostSpider)
     reactor.stop()
-
-# run_link_extract_spider()
-run_job_post_spider()
+# run_job_post_spider()
 # s = SWEPostSpider()
 # s.parse_posts()

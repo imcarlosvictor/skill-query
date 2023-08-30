@@ -1,5 +1,4 @@
 import dashboard
-from search_pool import *
 
 
 def main():

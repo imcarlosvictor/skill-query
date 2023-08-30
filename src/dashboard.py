@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
+import plotly.express as px
+import plotly.graph_objects as go
 import subprocess
 import json
 from urllib.request import urlopen
@@ -53,9 +55,9 @@ class Dashboard:
 
 
         ############ Call Spider ############
-        if show_btn:
-            run_spider.start_spider()
-            pass
+        # if show_btn:
+        #     run_spider.start_spider()
+        #     pass
         #####################################
 
     def plot_map(self, col):
@@ -67,51 +69,38 @@ class Dashboard:
     def plot_technology_graph(self, col):
         with col:
             col.header('Technologies')
-            # TEMPORARY CHART 
-            chart_data = pd.DataFrame(
-                np.random.randn(20, 3),
-                columns=['a', 'b', 'c'])
+            # plotly chart
+            data_canada = px.data.gapminder().query("country == 'Canada'")
+            fig = px.bar(data_canada, x='year', y='pop')
 
-            c = alt.Chart(chart_data).mark_circle().encode(
-                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-            st.altair_chart(c, use_container_width=True)
+            # fig = px.bar(x='', y='Technology')
+            st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_library_graph(self, col):
         with col:
             col.header('Libraries')
-            # TEMPORARY CHART 
-            chart_data = pd.DataFrame(
-                np.random.randn(20, 3),
-                columns=['a', 'b', 'c'])
+            # plotly chart
+            data_canada = px.data.gapminder().query("country == 'Canada'")
+            fig = px.bar(data_canada, x='year', y='pop')
 
-            c = alt.Chart(chart_data).mark_circle().encode(
-                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-            st.altair_chart(c, use_container_width=True)
+            # fig = px.bar(x='', y='Technology')
+            st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_education_graph(self, col):
         with col:
             col.header('Education')
-            # TEMPORARY CHART 
-            chart_data = pd.DataFrame(
-                np.random.randn(20, 3),
-                columns=['a', 'b', 'c'])
-
-            c = alt.Chart(chart_data).mark_circle().encode(
-                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-
-            st.altair_chart(c, use_container_width=True)
+            # plotly
+            df = px.data.tips()
+            fig = px.pie(df, values='tip', names='day')
+            st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_experience_graph(self, col):
         with col:
             col.header('Experience')
-            # TEMPORARY CHART 
-            chart_data = pd.DataFrame(
-                np.random.randn(20, 3),
-                columns=['a', 'b', 'c'])
+            # plotly chart
+            data_canada = px.data.gapminder().query("country == 'Canada'")
+            fig = px.bar(data_canada, x='year', y='pop')
 
-            c = alt.Chart(chart_data).mark_circle().encode(
-                x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
+            # fig = px.bar(x='', y='Technology')
+            st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
-            st.altair_chart(c, use_container_width=True)

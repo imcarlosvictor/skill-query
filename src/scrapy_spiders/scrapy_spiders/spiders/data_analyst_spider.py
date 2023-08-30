@@ -114,7 +114,10 @@ class DAPostSpider(scrapy.Spider):
             'jupyter': 0,
             'tableau': 0,
             'bi': 0,
-            'apache': 0,
+            'airflow': 0,
+            'spark': 0,
+            'hive': 0,
+            'hadoop': 0,
             'sas': 0,
             'excel': 0,
         }
