@@ -1,19 +1,24 @@
+import os
+import json
+import subprocess
 import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
 import plotly.express as px
 import plotly.graph_objects as go
-import subprocess
-import json
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
+from datetime import datetime
 
-import temp
 from scrapy_spiders import spider_control 
 from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider
 from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider
 
+
+FILENAME = __file__
+DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
+DASH_DATA_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/keyword_data.json'))
 
 
 class Dashboard:
@@ -37,6 +42,11 @@ class Dashboard:
             ('Canada', 'USA')
         )
 
+        year_option = st.sidebar.selectbox(
+            'Year',
+            ('2023',)
+        )
+
         show_btn = st.sidebar.button('Show', use_container_width=True)
 
 
@@ -53,9 +63,9 @@ class Dashboard:
 
         bottom_container = st.container()
         with bottom_container:
-            col6, col7 = st.columns([6,7],gap='large')
-            self.plot_experience_graph(col6)
-            self.plot_education_graph(col7)
+            col5, col6 = st.columns([5,6],gap='large')
+            # self.plot_experience_graph(col5)
+            self.plot_education_graph(col6)
 
 
         ############ Call Spider ############
@@ -70,60 +80,79 @@ class Dashboard:
         st.map()
 
     def plot_technology_graph(self, col):
+        year, month = self.get_date()
+        # Load data
+        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
+            data = json.load(jsonFile)
+        # plotly chart
         with col:
             col.header('Technologies')
-            # plotly chart
-            y_label = [tech for tech in temp.keywords['technology'].keys()]
-            import random
-            x_label = [random.randint(0,20) for i in y_label]
+            y_label = [key for key in data[year][str(int(month)-1)]['technology'].keys()]
+            x_label = [val for val in data[year][str(int(month)-1)]['technology'].values()]
             fig = go.Figure(go.Bar(
+                x=x_label,
                 y=y_label,
                 text=x_label,
                 textposition='auto',
                 textangle=0,
                 orientation='h'
             ))
-            fig.update_layout(yaxis={'categoryorder': 'category ascending'},height=600,margin={'t':0,'b':.7})
             fig.update_xaxes(visible=False)
+            fig.update_yaxes(categoryorder='total ascending')
+            fig.update_layout(height=600,margin={'t':0,'b':.7})
+            fig.update_traces(marker_color='#ff1745')
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_framework_graph(self, col):
+        year, month = self.get_date()
+        # load data
+        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
+            data = json.load(jsonFile)
+        # plotly chart
         with col:
             col.header('Frameworks')
-            # plotly chart
-            y_label = [tech for tech in temp.keywords['frameworks'].keys()]
-            import random
-            x_label = [random.randint(0,20) for i in y_label]
+            y_label = [y_key for y_key in data[year][str(int(month)-1)]['frameworks'].keys()]
+            x_label = [x_val for x_val in data[year][str(int(month)-1)]['frameworks'].values()]
             fig = go.Figure(go.Bar(
+                x=x_label,
                 y=y_label,
                 text=x_label,
                 textposition='auto',
                 textangle=0,
                 orientation='h'
             ))
-            fig.update_layout(yaxis={'categoryorder': 'category ascending'},height=600,margin={'t':0})
             fig.update_xaxes(visible=False)
+            fig.update_yaxes(categoryorder='total ascending')
+            fig.update_layout(height=600,margin={'t':0})
+            fig.update_traces(marker_color='#ff1745')
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_education_graph(self, col):
+        year, month = self.get_date()
+        # load data
+        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
+            data = json.load(jsonFile)
+        # plotly
         with col:
             col.header('Education')
-            # plotly
-            # df = px.data.tips()
-            pie_names = temp.keywords['education'].keys()
-            pie_values = temp.keywords['education'].values()
-            fig = px.pie(values=pie_values,names=pie_names)
+
+            names = [keys for keys in data[year][str(int(month)-1)]['education'].keys()]
+            values = [values for values in data[year][str(int(month)-1)]['education'].values()]
+            fig = px.pie(values=values, names=names, color_discrete_sequence=px.colors.sequential.RdBu)
             fig.update_layout(legend_title=False)
-            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig.update_traces(textposition='inside', textinfo='percent+label', showlegend=False)
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_experience_graph(self, col):
+        year, month = self.get_date()
+        # load data
+        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
+            data = json.load(jsonFile)
+        # plotly
         with col:
             col.header('Experience')
-            # plotly chart
-            y_label = [tech for tech in temp.keywords['frameworks'].keys()]
-            import random
-            x_label = [random.randint(0,20) for i in y_label]
+            y_key = [y_key for y_key in data[year][str(int(month)-1)]['experience'].keys()]
+            x_val = [x_val for x_val in data[year][str(int(month)-1)]['experience'].values()]
             fig = go.Figure(go.Bar(
                 # x=x_label,
                 y=y_label,
@@ -132,5 +161,14 @@ class Dashboard:
                 textangle=0,
                 orientation='h'
             ))
-            fig.update_layout(yaxis={'categoryorder': 'category ascending'},margin={'t':0})
+            fig.update_xaxes(visible=False)
+            fig.update_yaxes(categoryorder='total ascending')
+            fig.update_layout(height=600,margin={'t':0})
+            fig.update_traces(marker_color='#ff1745')
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
+
+    def get_date(self):
+        now = datetime.now()
+        year = now.strftime('%Y')
+        month = now.strftime('%m')
+        return year, month
