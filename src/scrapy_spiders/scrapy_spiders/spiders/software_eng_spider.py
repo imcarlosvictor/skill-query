@@ -20,8 +20,9 @@ class SoftwareEngineerSpider(scrapy.Spider):
     """
     Scrape all job links from the given URL and store the data collected in a file.
     """
-    name = 'SWE_role_spider'
-    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+engineer&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
+    name = 'SWE_link_spider'
+    page_num = 0
+    api_url = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+developer+jobs+worldwide&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
     custom_settings = {
         'FEEDS': {
@@ -46,6 +47,9 @@ class SoftwareEngineerSpider(scrapy.Spider):
         first_job_on_page = response.meta['first_job_on_page']
         jobs = response.css('li') # Job postings
         num_jobs_returned = len(jobs)
+        print('########')
+        print(len(jobs))
+        print('########')
 
         job_links = {}
         for job in jobs:
@@ -54,6 +58,7 @@ class SoftwareEngineerSpider(scrapy.Spider):
 
         ########## Request Next Page ##########
         if num_jobs_returned > 0:
+            self.page_num += 1
             first_job_on_page = int(first_job_on_page) + 25
             next_url = self.api_url + str(first_job_on_page)
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
@@ -73,13 +78,12 @@ class SWEPostSpider(scrapy.Spider):
                 'format': 'json',
             }
         },
-        'DOWNLOAD_DELAY': 1.4,
+        'DOWNLOAD_DELAY': 1,
     }
 
     def start_requests(self):
         # get the latest extract file from the export feed directory
         extract_target_file = self.get_latest_file_extract()
-        # extract_target_file = f'{EXPORT_FEED_DIR}/SWE_role_spider/2023-08-29T03-09-11.csv'
         try:
             with open(extract_target_file, 'rt') as f:
                 self.urls = [url.strip() for url in f.readlines()]
@@ -97,6 +101,9 @@ class SWEPostSpider(scrapy.Spider):
         """
         ##############################################
         # Get Data
+        job_location = response.css('span.topcard__flavor--bullet::text').get()
+        job_location_clean = self.clean_text(job_location)
+
         job_role  = response.css('h1::text').get()
         job_role_clean = self.clean_text(job_role)
 
@@ -106,111 +113,22 @@ class SWEPostSpider(scrapy.Spider):
         employment_level = response.css('span.description__job-criteria-text::text').get()
         employment_level_clean = self.clean_text(employment_level)
 
-        ##############################################
-        ##############################################
-        keywords = {
-            'technology': {
-                'assembly': 0,
-                'aws': 0,
-                'c++': 0,
-                'c/c++': 0,
-                'c#': 0,
-                'dart': 0,
-                'go': 0,
-                'git': 0,
-                'graphql': 0,
-                'haskell': 0,
-                'js': 0,
-                'javascript': 0,
-                'java': 0,
-                'kotlin': 0,
-                'kubernetes': 0,
-                'linux': 0,
-                'lua': 0,
-                'matlab': 0,
-                'mongodb': 0,
-                'mysql': 0,
-                'nosql': 0,
-                'python': 0,
-                'php': 0,
-                'postgresql': 0,
-                'ruby': 0,
-                'rust': 0,
-                'swift': 0,
-                'scala': 0,
-                'sql': 0,
-                'typescript': 0,
-            },
-            'frameworks': {
-                '.net': 0,
-                'angular': 0,
-                'bootstrap': 0,
-                'django': 0,
-                'flask': 0,
-                'jquery': 0,
-                'laravel': 0,
-                'next.js': 0,
-                'node.js': 0,
-                'node': 0,
-                'ruby on rails': 0,
-                'redis': 0,
-                'react': 0,
-                'spring': 0,
-                'spark': 0,
-                'vue': 0,
-            },
-            'education': {
-                'bachelor': 0,
-                'masters': 0,
-                'phd': 0,
-            }
-        }
-
         job_description = response.css('div.show-more-less-html__markup::text').get()
-        for list in job_description:
-            new_list = list.split()
-            for word in new_list:
-                if word.lower() in keywords['technology'].keys():
-                   keyword['technology'][word.lower()] += 1
-                   continue
-
-                if word.lower() in keywords['frameworks'].keys():
-                    keywords['frameworks'][word.lower()] += 1
-                    continue
-
-                if word.lower() in keywords['education'].keys():
-                    keyword['education'][word.lower()] += 1
-                    continue
-
         job_description_list = response.css('div.show-more-less-html__markup ul li::text').getall()
-        for list in job_description_list:
-            new_list = list.split()
-            for word in new_list:
-                if word.lower() in keywords['technology'].keys():
-                    keywords['technology'][word.lower()] += 1
-                    continue
 
-                if word.lower() in keywords['frameworks'].keys():
-                    keywords['frameworks'][word.lower()] += 1
-                    continue
-
-                if word.lower() in keywords['education'].keys():
-                    keywords['education'][word.lower()] += 1
-                    continue
-
-        ##############################################
-        ##############################################
 
         time_format = datetime.now()
-        today = time_format.strftime('%Y-%m-%d')
+        year = time_format.strftime('%Y')
+        month = time_format.strftime('%m')
         yield {
-            'date': today,
+            'year': year,
+            'month': month,
+            'location': job_location_clean,
             'role': job_role_clean,
             'seniority_level' : seniority_level_clean,
             'employment_type' : employment_level_clean,
-            'keywords': keywords,
+            'description': job_description_list,
         }
-
 
     def clean_text(self, text):
         """
@@ -228,10 +146,11 @@ class SWEPostSpider(scrapy.Spider):
         """
         # get current date
         current_date = date.today()
-        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_role_spider/'
-        # find file path of latest extract to scrape
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_link_spider/'
+        # find file path of latest extract
         extract_target_file = ''
         for file in os.listdir(swe_export_feed_directory):
+            # Find file with "YYYY-MM"
             if (file[:10] == str(current_date)):
                 target_file = os.path.join(swe_export_feed_directory, file)
                 if os.path.isfile(target_file):

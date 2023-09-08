@@ -22,7 +22,7 @@ class SpiderControl:
 
     @reactor_manager
     @defer.inlineCallbacks
-    def run_link_extract_spider(self):
+    def run_link_spider(self):
         """
         Start both spiders
         """
@@ -32,8 +32,23 @@ class SpiderControl:
         runner = CrawlerRunner(settings)
         # Start spider
         yield runner.crawl(SoftwareEngineerSpider)
-        yield runner.crawl(DataAnalystSpider)
+        yield runner.crawl(SWEPostSpider)
         reactor.stop()
+
+    def run_swe_spider(self):
+        """
+        Start both spiders
+        """
+        # Configure settings
+        settings = get_project_settings()
+        configure_logging(settings)
+        process = CrawlerProcess(settings)
+        # Start spider
+        process.crawl(SoftwareEngineerSpider)
+        if SoftwareEngineerSpider.page_num > 5:
+            process.crawl(SWEPostSpider)
+            process.start()
+        process.start()
 
     @reactor_manager
     @defer.inlineCallbacks
@@ -51,44 +66,6 @@ class SpiderControl:
         reactor.stop()
 
 
-# sc = SpiderControl()
-# sc.run_link_extract_spider()
+sc = SpiderControl()
+# sc.run_swe_spider()
 # sc.run_job_post_spider()
-
-
-
-# def reactor_manager(function):
-#     def wrapper():
-#         function()
-#         reactor.run()
-#     return wrapper
-
-# @reactor_manager
-# @defer.inlineCallbacks
-# def run_link_extract_spider():
-#     """
-#     Start both spiders
-#     """
-#     # Configure settings
-#     settings = get_project_settings()
-#     configure_logging(settings)
-#     runner = CrawlerRunner(settings)
-#     # Start spider
-#     yield runner.crawl(SoftwareEngineerSpider)
-#     yield runner.crawl(DataAnalystSpider)
-#     reactor.stop()
-
-# @reactor_manager
-# @defer.inlineCallbacks
-# def run_job_post_spider():
-#     """
-#     Start both spiders
-#     """
-#     # Configure settings
-#     settings = get_project_settings()
-#     configure_logging(settings)
-#     runner = CrawlerRunner(settings)
-#     # Start spider
-#     yield runner.crawl(SWEPostSpider)
-#     # yield runner.crawl(DAPostSpider)
-#     reactor.stop()

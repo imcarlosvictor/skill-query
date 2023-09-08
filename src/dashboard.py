@@ -11,7 +11,7 @@ from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
 from datetime import datetime
 
-from scrapy_spiders import spider_control 
+# from scrapy_spiders import spider_control 
 from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider
 from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider
 
@@ -87,8 +87,8 @@ class Dashboard:
         # plotly chart
         with col:
             col.header('Technologies')
-            y_label = [key for key in data[year][str(int(month)-1)]['technology'].keys()]
-            x_label = [val for val in data[year][str(int(month)-1)]['technology'].values()]
+            y_label = [key for key in data[year][month]['technology'].keys()]
+            x_label = [val for val in data[year][month]['technology'].values()]
             fig = go.Figure(go.Bar(
                 x=x_label,
                 y=y_label,
@@ -111,8 +111,8 @@ class Dashboard:
         # plotly chart
         with col:
             col.header('Frameworks')
-            y_label = [y_key for y_key in data[year][str(int(month)-1)]['frameworks'].keys()]
-            x_label = [x_val for x_val in data[year][str(int(month)-1)]['frameworks'].values()]
+            y_label = [y_key for y_key in data[year][month]['frameworks'].keys()]
+            x_label = [x_val for x_val in data[year][month]['frameworks'].values()]
             fig = go.Figure(go.Bar(
                 x=x_label,
                 y=y_label,
@@ -136,8 +136,8 @@ class Dashboard:
         with col:
             col.header('Education')
 
-            names = [keys for keys in data[year][str(int(month)-1)]['education'].keys()]
-            values = [values for values in data[year][str(int(month)-1)]['education'].values()]
+            names = [keys for keys in data[year][month]['education'].keys()]
+            values = [values for values in data[year][month]['education'].values()]
             fig = px.pie(values=values, names=names, color_discrete_sequence=px.colors.sequential.RdBu)
             fig.update_layout(legend_title=False)
             fig.update_traces(textposition='inside', textinfo='percent+label', showlegend=False)
@@ -151,8 +151,8 @@ class Dashboard:
         # plotly
         with col:
             col.header('Experience')
-            y_key = [y_key for y_key in data[year][str(int(month)-1)]['experience'].keys()]
-            x_val = [x_val for x_val in data[year][str(int(month)-1)]['experience'].values()]
+            y_key = [y_key for y_key in data[year][month]['experience'].keys()]
+            x_val = [x_val for x_val in data[year][month]['experience'].values()]
             fig = go.Figure(go.Bar(
                 # x=x_label,
                 y=y_label,
