@@ -12,8 +12,8 @@ from scrapy.crawler import CrawlerProcess
 from datetime import datetime
 
 # from scrapy_spiders import spider_control 
-from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SWEPostSpider
-from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DAPostSpider
+from scrapy_spiders.scrapy_spiders.spiders.software_eng_spider import SoftwareEngineerSpider, SoftwareEngineerPostSpider 
+from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalystSpider, DataAnalystPostSpider
 
 
 FILENAME = __file__

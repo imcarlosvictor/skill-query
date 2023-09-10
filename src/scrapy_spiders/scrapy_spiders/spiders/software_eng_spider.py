@@ -8,7 +8,6 @@ from datetime import date, datetime
 from scrapy.spiders import CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 
-# from ...search_pool import technologies, libraries, education
 
 # set path
 FILENAME = __file__
@@ -20,7 +19,7 @@ class SoftwareEngineerSpider(scrapy.Spider):
     """
     Scrape all job links from the given URL and store the data collected in a file.
     """
-    name = 'SWE_link_spider'
+    name = 'software_engineer_job_role_spider'
     page_num = 0
     api_url = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=software+developer+jobs+worldwide&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
 
@@ -30,7 +29,7 @@ class SoftwareEngineerSpider(scrapy.Spider):
                 'format': 'csv',
             }
         },
-        'DOWNLOAD_DELAY': 1.2,
+        'DOWNLOAD_DELAY': 0.9,
     }
 
     def start_requests(self):
@@ -64,12 +63,12 @@ class SoftwareEngineerSpider(scrapy.Spider):
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
 
 
-class SWEPostSpider(scrapy.Spider):
+class SoftwareEngineerPostSpider(scrapy.Spider):
     """
     Extract data from the scraped links.
     """
     def __init__(self):
-        self.name = 'SWE_post_spider'
+        self.name = 'software_engineer_job_post_spider'
         self.urls = []
 
     custom_settings = {
@@ -78,11 +77,10 @@ class SWEPostSpider(scrapy.Spider):
                 'format': 'json',
             }
         },
-        'DOWNLOAD_DELAY': 1,
+        # 'DOWNLOAD_DELAY': 1.4,
     }
 
     def start_requests(self):
-        # get the latest extract file from the export feed directory
         extract_target_file = self.get_latest_file_extract()
         try:
             with open(extract_target_file, 'rt') as f:
@@ -146,7 +144,7 @@ class SWEPostSpider(scrapy.Spider):
         """
         # get current date
         current_date = date.today()
-        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_link_spider/'
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/software_engineer_job_role_spider/'
         # find file path of latest extract
         extract_target_file = ''
         for file in os.listdir(swe_export_feed_directory):

@@ -1,5 +1,4 @@
 import dashboard
-from scrapy_spiders.spider_control import SpiderControl
 
 
 def main():

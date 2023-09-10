@@ -1,14 +1,12 @@
 import os
 import sys
+import re
 import json
-from datetime import datetime
-
 import w3lib.html
 import scrapy
+from datetime import date, datetime
 from scrapy.spiders import CrawlSpider
 from scrapy.linkextractors import LinkExtractor
-
-
 
 # set path
 FILENAME = __file__
@@ -20,7 +18,7 @@ class DataAnalystSpider(scrapy.Spider):
     """
     Scrape all job links from the given URL and store the data collected in a file.
     """
-    name = 'DA_role_spider'
+    name = 'data_analyst_job_role_spider'
     api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=data+analyst&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum'
 
     custom_settings = {
@@ -58,12 +56,12 @@ class DataAnalystSpider(scrapy.Spider):
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
 
 
-class DAPostSpider(scrapy.Spider):
+class DataAnalystPostSpider(scrapy.Spider):
     """
     Extract data from the scraped links.
     """
     def __init__(self):
-        self.name = 'DA_post_spider'
+        self.name = 'data_analyst_job_post_spider'
         self.urls = []
 
     custom_settings = {
@@ -71,17 +69,22 @@ class DAPostSpider(scrapy.Spider):
             f'{EXPORT_FEED_DIR}/%(name)s/%(time)s.json': {
                 'format': 'json',
             }
-        }
+        },
+        # 'DOWNLOAD_DELAY': 1.4,
     }
 
     def start_requests(self):
-        # get latest extract file
         extract_target_file = self.get_latest_file_extract()
-        with open(extract_target_file, 'rt') as f:
-            self.urls = [url.strip() for url in f.readlines()]
-        # scrape through links
-        for url in self.urls[1:]:
-            yield scrapy.Request(url=url, callback=self.parse_posts)
+        try:
+            with open(extract_target_file, 'rt') as f:
+                self.urls = [url.strip() for url in f.readlines()]
+            # scrape through links
+            for url in self.urls[1:]:
+                yield scrapy.Request(url=url, callback=self.parse_posts)
+        except FileNotFoundError as e:
+            print('###################################################')
+            print('# FileNotFoundError: No file matches current date #')
+            print('###################################################')
 
     def parse_posts(self, response):
         """
@@ -89,6 +92,9 @@ class DAPostSpider(scrapy.Spider):
         """
         ##############################################
         # Get Data
+        job_location = response.css('span.topcard__flavor--bullet::text').get()
+        job_location_clean = self.clean_text(job_location)
+
         job_role  = response.css('h1::text').get()
         job_role_clean = self.clean_text(job_role)
 
@@ -98,89 +104,21 @@ class DAPostSpider(scrapy.Spider):
         employment_level = response.css('span.description__job-criteria-text::text').get()
         employment_level_clean = self.clean_text(employment_level)
 
-        ##############################################
-        ##############################################
-        # Extract keywords for tables
-        job_description = response.css('div.show-more-less-html__markup ul li::text').getall()
-        technology = {
-            'python': 0,
-            'r': 0,
-            'java': 0,
-            'scala': 0,
-            'matlab': 0,
-            'sql': 0,
-            'nosql': 0,
-            'linux': 0,
-            'jupyter': 0,
-            'tableau': 0,
-            'bi': 0,
-            'airflow': 0,
-            'spark': 0,
-            'hive': 0,
-            'hadoop': 0,
-            'sas': 0,
-            'excel': 0,
-        }
+        job_description = response.css('div.show-more-less-html__markup::text').get()
+        job_description_list = response.css('div.show-more-less-html__markup ul li::text').getall()
 
-        for list in job_description:
-            new_list = list.split()
-            for word in new_list:
-               if word.lower() in technologies.keys():
-                   technologies[word.lower()] += 1
 
-        ##############################################
-        # library keyword extract 
-        library = {
-            'tensorflow': 0,
-            'pytorch': 0,
-            'theano': 0,
-            'opencv': 0,
-            'requests': 0,
-            'scikit-learn': 0,
-            'numpy': 0,
-            'keras': 0,
-            'scipy': 0,
-            'pandas': 0,
-            'requests': 0,
-            'pillow': 0,
-            'scrapy': 0,
-            'selenium': 0,
-            'kivy': 0,
-            'theano': 0,
-            'matplotlib': 0,
-            'seaborn': 0,
-            'beautifulsoup': 0,
-        }
-
-        for list in job_description:
-            new_list = list.split()
-            for word in new_list:
-               if word.lower() in libraries.keys():
-                   libraries[word.lower()] += 1
-
-        ##############################################
-        # Education keyword extract
-        education = {
-            'bachelor': 0,
-            'masters': 0,
-            'phd': 0,
-        }
-
-        for list in job_description:
-            new_list = list.split()
-            for word in new_list:
-               if word.lower() in education.keys():
-                   education[word.lower()] += 1
-        ##############################################
-        ##############################################
-
+        time_format = datetime.now()
+        year = time_format.strftime('%Y')
+        month = time_format.strftime('%m')
         yield {
+            'year': year,
+            'month': month,
+            'location': job_location_clean,
             'role': job_role_clean,
             'seniority_level' : seniority_level_clean,
             'employment_type' : employment_level_clean,
-            'tech_keyword_count': technology,
-            'library_keyword_count': library,
-            'education_keyword_count': education,
+            'description': job_description_list,
         }
 
     def clean_text(self, text):
@@ -198,8 +136,8 @@ class DAPostSpider(scrapy.Spider):
         Find the most recent extract in the directory.
         """
         # get current date
-        current_date = datetime.date.today()
-        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/SWE_role_spider/'
+        current_date = date.today()
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/software_engineer_job_role_spider/'
         # find file path of latest extract to scrape
         extract_target_file = ''
         for file in os.listdir(swe_export_feed_directory):

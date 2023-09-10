@@ -50,9 +50,16 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "scrapy_spiders.middlewares.ScrapySpidersDownloaderMiddleware": 543,
-#}
+# import os
+# DIR_PATH = os.path.abspath(os.path.dirname(__file__))
+# DOWNLOADER_MIDDLEWARES = {
+#     "scrapy_spiders.middlewares.ScrapySpidersDownloaderMiddleware": 543,
+# }
+DOWNLOADER_MIDDLEWARES = {
+    "rotating_proxies.middlewares.RotatingProxyMiddleware": 800,
+    "rotating_proxies.middlewares.BanDetectionMiddleware": 800,
+}
+ROTATING_PROXY_LIST_PATH = 'proxy_list.txt'
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

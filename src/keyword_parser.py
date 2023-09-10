@@ -60,7 +60,7 @@ if cur_year not in data.items():
 # Add month
 # if cur_month not in data[cur_year].items():
 prev_month = cur_month
-data[cur_year] = ({prev_month: keywords}) 
+data[cur_year] = ({prev_month: keywords})
 # data[cur_year][cur_month] = {} 
 # Update JSON file with new changes
 with open(keyword_file_path, 'w') as json_file:
