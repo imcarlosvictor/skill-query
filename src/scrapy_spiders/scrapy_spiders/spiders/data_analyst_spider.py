@@ -2,24 +2,32 @@ import os
 import sys
 import re
 import json
+import logging
 import w3lib.html
 import scrapy
 from datetime import date, datetime
 from scrapy.spiders import CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 
+# logger = logging.getLogger('scrapy')
+# logger.setLevel(logging.WARNING)
+# logging.getLogger('scrapy').setLevel(logging.INFO)
+# logging.getLogger('scrapy').propagate = False
+
 # set path
 FILENAME = __file__
 DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
 EXPORT_FEED_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, '../../../export_feed/'))
+PROXY_LIST_PATH = os.path.abspath(os.path.join(DIRECTORY_PATH, '../../proxy_list.txt'))
 
 
 class DataAnalystSpider(scrapy.Spider):
     """
     Scrape all job links from the given URL and store the data collected in a file.
     """
-    name = 'data_analyst_job_role_spider'
-    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=data+analyst&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum'
+    name = 'data_analyst_link_spider'
+    api_url = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=data+analyst+worldwide&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum='
+    page_num = 0
 
     custom_settings = {
         'FEEDS': {
@@ -28,6 +36,27 @@ class DataAnalystSpider(scrapy.Spider):
             },
         },
         'DOWNLOAD_DELAY': 0.9,
+        # 'PROXY_POOL_ENABLED': True,
+        # 'RETRY_TIMES': 10,
+        # 'RETRY_HTTP_CODES': [500,503,504,400,403,404,408],
+        # 'DOWNLOADER_MIDDLEWARES': {
+        #     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
+        #     'scrapy_proxies.RandomProxy': 100,
+        #     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+        # },
+        # 'PROXY_LIST': PROXY_LIST_PATH,
+        # 'PROXY_MODE': 0,
+
+        # 'ROTATING_PROXY_LIST_PATH': PROXY_LIST_PATH,
+        # 'DOWNLOADER_MIDDLEWARES': {
+        #     # 'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+        #     # 'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+        #     'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+        #     'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+        # },
+        # 'PROXY_POOL_BAN_POLICY': 'scrapy_spiders.policy.BanDetectionPolicyNotText',
+        'LOG_LEVEL': 'INFO',
+        # 'LOG_ENABLED': False,
     }
 
     def start_requests(self):
@@ -43,6 +72,8 @@ class DataAnalystSpider(scrapy.Spider):
         first_job_on_page = response.meta['first_job_on_page']
         jobs = response.css('li') # Job postings
         num_jobs_returned = len(jobs)
+        print('####################################')
+        print(f'<< Data Analyst >> Page number: {self.page_num}')
 
         job_links = {}
         for job in jobs:
@@ -51,6 +82,7 @@ class DataAnalystSpider(scrapy.Spider):
 
         ########## Request Next Page ##########
         if num_jobs_returned > 0:
+            self.page_num += 1
             first_job_on_page = int(first_job_on_page) + 25
             next_url = self.api_url + str(first_job_on_page)
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
@@ -61,7 +93,7 @@ class DataAnalystPostSpider(scrapy.Spider):
     Extract data from the scraped links.
     """
     def __init__(self):
-        self.name = 'data_analyst_job_post_spider'
+        self.name = 'data_analyst_post_spider'
         self.urls = []
 
     custom_settings = {
@@ -70,7 +102,9 @@ class DataAnalystPostSpider(scrapy.Spider):
                 'format': 'json',
             }
         },
-        # 'DOWNLOAD_DELAY': 1.4,
+        'LOG_LEVEL': 'INFO',
+        # 'LOG_ENABLED': False,
+        'DOWNLOAD_DELAY': 1.4,
     }
 
     def start_requests(self):
@@ -79,6 +113,8 @@ class DataAnalystPostSpider(scrapy.Spider):
             with open(extract_target_file, 'rt') as f:
                 self.urls = [url.strip() for url in f.readlines()]
             # scrape through links
+            print('########################################')
+            print('<< data analyst >> parsing job posts...')
             for url in self.urls[1:]:
                 yield scrapy.Request(url=url, callback=self.parse_posts)
         except FileNotFoundError as e:
@@ -137,7 +173,7 @@ class DataAnalystPostSpider(scrapy.Spider):
         """
         # get current date
         current_date = date.today()
-        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/software_engineer_job_role_spider/'
+        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/data_analyst_link_spider/'
         # find file path of latest extract to scrape
         extract_target_file = ''
         for file in os.listdir(swe_export_feed_directory):

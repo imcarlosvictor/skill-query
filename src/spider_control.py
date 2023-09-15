@@ -14,18 +14,39 @@ from scrapy_spiders.scrapy_spiders.spiders.data_analyst_spider import DataAnalys
 
 class SpiderControl:
 
-    def run_job_link_spider(self):
+    def reactor_manager(spider):
+        def wrapper(self):
+            spider(self)
+            reactor.run()
+        return wrapper
+
+    @reactor_manager
+    @defer.inlineCallbacks
+    def run_link_spider(self):
         """
-        Scrape job links simultaneously.
+        Start both spiders
         """
+        # Configure settings
         settings = get_project_settings()
         configure_logging(settings)
-        process = CrawlerProcess(settings)
-        process.crawl(SoftwareEngineerSpider)
-        process.crawl(DataAnalystSpider)
-        process.start()
+        runner = CrawlerRunner(settings)
+        # Start spider
+        yield runner.crawl(SoftwareEngineerSpider)
+        yield runner.crawl(DataAnalystSpider)
+        reactor.stop()
 
-    def run_job_post_spider(self):
+    # def run_link_spider(self):
+    #     """
+    #     Scrape job links simultaneously.
+    #     """
+    #     settings = get_project_settings()
+    #     configure_logging(settings)
+    #     process = CrawlerProcess(settings)
+    #     yield process.crawl(SoftwareEngineerSpider)
+    #     yield process.crawl(DataAnalystSpider)
+    #     process.start()
+
+    def run_post_spider(self):
         """
         Crawl and scrape job posts simultaneously.
         """
@@ -50,7 +71,6 @@ class SpiderControl:
             EXPORT_FEED_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/software_engineer_post_spider/'))
         elif job_title == 'data_analyst':
             EXPORT_FEED_DIR = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/data_analyst_post_spider/'))
-
 
         today = date.today()
         cur_year = today.strftime("%Y")
@@ -109,26 +129,6 @@ class SpiderControl:
         with open(keyword_file_path, 'w') as json_file:
             json.dump(data, json_file)
 
-    # def reactor_manager(spider):
-    #     def wrapper(self):
-    #         spider(self)
-    #         reactor.run()
-    #     return wrapper
-
-    # @reactor_manager
-    # @defer.inlineCallbacks
-    # def run_link_spider(self):
-    #     """
-    #     Start both spiders
-    #     """
-    #     # Configure settings
-    #     settings = get_project_settings()
-    #     configure_logging(settings)
-    #     runner = CrawlerRunner(settings)
-    #     # Start spider
-    #     yield runner.crawl(SoftwareEngineerLinkSpider)
-    #     yield runner.crawl(DataAnalystLinkSpider)
-    #     reactor.stop()
 
     # @reactor_manager
     # @defer.inlineCallbacks
@@ -147,7 +147,6 @@ class SpiderControl:
 
 
 sc = SpiderControl()
-# sc.run_job_link_spider()
-sc.run_job_post_spider()
-
-
+# sc.run_link_spider()
+# sc.run_post_spider()
+sc.keyword_parser('software_eng')

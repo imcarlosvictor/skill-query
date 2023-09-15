@@ -50,16 +50,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# import os
-# DIR_PATH = os.path.abspath(os.path.dirname(__file__))
 # DOWNLOADER_MIDDLEWARES = {
 #     "scrapy_spiders.middlewares.ScrapySpidersDownloaderMiddleware": 543,
 # }
-DOWNLOADER_MIDDLEWARES = {
-    "rotating_proxies.middlewares.RotatingProxyMiddleware": 800,
-    "rotating_proxies.middlewares.BanDetectionMiddleware": 800,
-}
-ROTATING_PROXY_LIST_PATH = 'proxy_list.txt'
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -96,10 +89,5 @@ ROTATING_PROXY_LIST_PATH = 'proxy_list.txt'
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
-
-
-# CLOSESPIDER_TIMEOUT = 20
-# CLOSESPIDER_ITEMCOUNT = 400
-# DOWNLOAD_TIMEOUT = 10
