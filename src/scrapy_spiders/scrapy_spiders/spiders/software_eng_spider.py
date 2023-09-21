@@ -83,99 +83,99 @@ class SoftwareEngineerSpider(scrapy.Spider):
             yield scrapy.Request(url=next_url, callback=self.parse_links, meta={'first_job_on_page': first_job_on_page})
 
 
-class SoftwareEngineerPostSpider(scrapy.Spider):
-    """
-    Extract data from the scraped links.
-    """
-    def __init__(self):
-        self.name = 'software_engineer_post_spider'
-        self.urls = []
+#class SoftwareEngineerPostSpider(scrapy.Spider):
+#    """
+#    Extract data from the scraped links.
+#    """
+#    def __init__(self):
+#        self.name = 'software_engineer_post_spider'
+#        self.urls = []
 
-    custom_settings = {
-        'FEEDS': {
-            f'{EXPORT_FEED_DIR}/%(name)s/%(time)s.json': {
-                'format': 'json',
-            }
-        },
-        'LOG_LEVEL': 'INFO',
-        # 'LOG_ENABLED': False,
-        'DOWNLOAD_DELAY': 1.4,
-    }
+#    custom_settings = {
+#        'FEEDS': {
+#            f'{EXPORT_FEED_DIR}/%(name)s/%(time)s.json': {
+#                'format': 'json',
+#            }
+#        },
+#        'LOG_LEVEL': 'INFO',
+#        # 'LOG_ENABLED': False,
+#        'DOWNLOAD_DELAY': 1.4,
+#    }
 
-    def start_requests(self):
-        extract_target_file = self.get_latest_file_extract()
-        try:
-            with open(extract_target_file, 'rt') as f:
-                self.urls = [url.strip() for url in f.readlines()]
-            # visit links
-            print('########################################')
-            print('<< data analyst >> parsing job posts...')
-            for url in self.urls[1:]:
-                yield scrapy.Request(url=url, callback=self.parse_posts)
-        except FileNotFoundError as e:
-            print('###################################################')
-            print('# FileNotFoundError: No file matches current date #')
-            print('###################################################')
+#    def start_requests(self):
+#        extract_target_file = self.get_latest_file_extract()
+#        try:
+#            with open(extract_target_file, 'rt') as f:
+#                self.urls = [url.strip() for url in f.readlines()]
+#            # visit links
+#            print('########################################')
+#            print('<< data analyst >> parsing job posts...')
+#            for url in self.urls[1:]:
+#                yield scrapy.Request(url=url, callback=self.parse_posts)
+#        except FileNotFoundError as e:
+#            print('###################################################')
+#            print('# FileNotFoundError: No file matches current date #')
+#            print('###################################################')
 
-    def parse_posts(self, response):
-        """
-        Extract data from job links.
-        """
-        ##############################################
-        # Get Data
-        job_location = response.css('span.topcard__flavor--bullet::text').get()
-        job_location_clean = self.clean_text(job_location)
+#    def parse_posts(self, response):
+#        """
+#        Extract data from job links.
+#        """
+#        ##############################################
+#        # Get Data
+#        job_location = response.css('span.topcard__flavor--bullet::text').get()
+#        job_location_clean = self.clean_text(job_location)
 
-        job_role  = response.css('h1::text').get()
-        job_role_clean = self.clean_text(job_role)
+#        job_role  = response.css('h1::text').get()
+#        job_role_clean = self.clean_text(job_role)
 
-        seniority_level = response.css('span.description__job-criteria-text::text').get()
-        seniority_level_clean = self.clean_text(seniority_level)
+#        seniority_level = response.css('span.description__job-criteria-text::text').get()
+#        seniority_level_clean = self.clean_text(seniority_level)
 
-        employment_level = response.css('span.description__job-criteria-text::text').get()
-        employment_level_clean = self.clean_text(employment_level)
+#        employment_level = response.css('span.description__job-criteria-text::text').get()
+#        employment_level_clean = self.clean_text(employment_level)
 
-        job_description = response.css('div.show-more-less-html__markup::text').get()
-        job_description_list = response.css('div.show-more-less-html__markup ul li::text').getall()
+#        job_description = response.css('div.show-more-less-html__markup::text').get()
+#        job_description_list = response.css('div.show-more-less-html__markup ul li::text').getall()
 
 
-        time_format = datetime.now()
-        year = time_format.strftime('%Y')
-        month = time_format.strftime('%m')
-        yield {
-            'year': year,
-            'month': month,
-            'location': job_location_clean,
-            'role': job_role_clean,
-            'seniority_level' : seniority_level_clean,
-            'employment_type' : employment_level_clean,
-            'description': job_description_list,
-        }
+#        time_format = datetime.now()
+#        year = time_format.strftime('%Y')
+#        month = time_format.strftime('%m')
+#        yield {
+#            'year': year,
+#            'month': month,
+#            'location': job_location_clean,
+#            'role': job_role_clean,
+#            'seniority_level' : seniority_level_clean,
+#            'employment_type' : employment_level_clean,
+#            'description': job_description_list,
+#        }
 
-    def clean_text(self, text):
-        """
-        Remove html tags from string.
-        """
-        html_pattern = re.compile('<.*?>')
-        no_tag_text = re.sub(html_pattern, '', text)
-        clean_text = re.sub('\n', '', no_tag_text)
-        clean_text = clean_text.strip()
-        return clean_text
+#    def clean_text(self, text):
+#        """
+#        Remove html tags from string.
+#        """
+#        html_pattern = re.compile('<.*?>')
+#        no_tag_text = re.sub(html_pattern, '', text)
+#        clean_text = re.sub('\n', '', no_tag_text)
+#        clean_text = clean_text.strip()
+#        return clean_text
 
-    def get_latest_file_extract(self):
-        """
-        Find the most recent extract in the directory.
-        """
-        # get current date
-        current_date = date.today()
-        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/software_engineer_link_spider/'
-        # find file path of latest extract
-        extract_target_file = ''
-        for file in os.listdir(swe_export_feed_directory):
-            # Find file with "YYYY-MM"
-            if (file[:10] == str(current_date)):
-                target_file = os.path.join(swe_export_feed_directory, file)
-                if os.path.isfile(target_file):
-                    extract_target_file = target_file
-        print(extract_target_file)
-        return extract_target_file
+#    def get_latest_file_extract(self):
+#        """
+#        Find the most recent extract in the directory.
+#        """
+#        # get current date
+#        current_date = date.today()
+#        swe_export_feed_directory = f'{EXPORT_FEED_DIR}/software_engineer_link_spider/'
+#        # find file path of latest extract
+#        extract_target_file = ''
+#        for file in os.listdir(swe_export_feed_directory):
+#            # Find file with "YYYY-MM"
+#            if (file[:10] == str(current_date)):
+#                target_file = os.path.join(swe_export_feed_directory, file)
+#                if os.path.isfile(target_file):
+#                    extract_target_file = target_file
+#        print(extract_target_file)
+#        return extract_target_file
