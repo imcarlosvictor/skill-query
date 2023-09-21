@@ -149,4 +149,4 @@ class SpiderControl:
 sc = SpiderControl()
 # sc.run_link_spider()
 # sc.run_post_spider()
-sc.keyword_parser('software_eng')
+# sc.keyword_parser('software_eng')
