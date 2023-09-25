@@ -1,12 +1,14 @@
 import os
 import json
 import subprocess
+import folium
 import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_folium import st_folium
 from urllib.request import urlopen
 from scrapy.crawler import CrawlerProcess
 from datetime import datetime
@@ -21,6 +23,7 @@ from scrapy_spiders.scrapy_spiders.spiders.da_post_spider import DataAnalystPost
 FILENAME = __file__
 DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
 DASH_DATA_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/keyword_data.json'))
+GEO_DATA_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/world_countries.json'))
 
 
 class Dashboard:
@@ -75,20 +78,58 @@ class Dashboard:
             # self.plot_experience_graph(col5)
             self.plot_education_graph(col6, role)
 
-
     def plot_map(self):
-        st.map()
+        year, month = self.get_date()
+
+        # Plot polygons on folium map
+        geo_data = ('http://geojson.xyz/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson')
+        # Plot data
+        keyword_data_df= pd.read_json(DASH_DATA_TARGET_FILE)
+        countries_pd = list(keyword_data_df['software_engineer'][int(year)][month]['location'].keys())
+        countries_pd = [ country.capitalize() for country in countries_pd ]
+        country_keyword_count_pd = []
+        for country in countries_pd:
+            country_keyword_count_pd.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country.lower()]['keyword_count'])
+
+        zip_countries_keywordcount = list(zip(countries_pd, country_keyword_count_pd))
+        for c,k in zip_countries_keywordcount:
+            print(f'{c} || {k}')
+        # print(zip_countries_keywordcount)
+        # print(type(zip_countries_keywordcount))
+        # print(country_keyword_count_pd)
+        # print(zip_countries_keywordcount)
+
+        # data = {'countries': countries_pd , 'values': country_keyword_count_pd}
+        # print(type(countries_pd))
+        # print(type(country_keyword_count_pd))
+
+        # for key,val in data.items():
+        #     for v in data[key]:
+        #         if pd.isnull(v):
+        #             print('True')
+        #     for v in data[val]:
+        #         if pd.isnull(v):
+        #             print('True')
+
+        m = folium.Map(location=[40,80], control_scale=True, zoom_start=2)
+        folium.Choropleth(
+            geo_data=geo_data,
+            # data=data,
+            column=[countries_pd, country_keyword_count_pd],
+            key_on='feature.properties.name',
+            fill_color='OrRd',
+            line_color='#0000',
+            name='Job Posting Distribution',
+            legend_name='Job Openings',
+        ).add_to(m)
+        st_data = st_folium(m, width=1900)
 
     def plot_technology_graph(self, col, job_role):
-        year, month = self.get_date()
-        # Load data
-        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
-            data = json.load(jsonFile)
-        # plotly chart
         with col:
             col.header('Technologies')
-            y_label = [key for key in data[job_role][year][month]['technology'].keys()]
-            x_label = [val for val in data[job_role][year][month]['technology'].values()]
+            y_label, x_label = self.get_data(job_role, 'technology')
+            y_label = y_label
+            x_label = x_label
             fig = go.Figure(go.Bar(
                 x=x_label,
                 y=y_label,
@@ -104,15 +145,11 @@ class Dashboard:
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_framework_graph(self, col, job_role):
-        year, month = self.get_date()
-        # load data
-        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
-            data = json.load(jsonFile)
-        # plotly chart
         with col:
             col.header('Frameworks')
-            y_label = [y_key for y_key in data[job_role][year][month]['frameworks'].keys()]
-            x_label = [x_val for x_val in data[job_role][year][month]['frameworks'].values()]
+            y_label, x_label = self.get_data(job_role, 'frameworks')
+            y_label = y_label
+            x_label = x_label
             fig = go.Figure(go.Bar(
                 x=x_label,
                 y=y_label,
@@ -129,32 +166,23 @@ class Dashboard:
 
     # TODO:
     def plot_education_graph(self, col, job_role):
-        year, month = self.get_date()
-        # load data
-        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
-            data = json.load(jsonFile)
-        # plotly
         with col:
             col.header('Education')
-
-            names = [keys for keys in data[job_role][year][month]['education'].keys()]
-            values = [values for values in data[job_role][year][month]['education'].values()]
+            y_label, x_label = self.get_data(job_role, 'education')
+            names = y_label
+            values = x_label
             fig = px.pie(values=values, names=names, color_discrete_sequence=px.colors.sequential.RdBu)
             fig.update_layout(legend_title=False)
             fig.update_traces(textposition='inside', textinfo='percent+label', showlegend=False)
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
-    # TODO:
+    # TODO: Plot heatmap
     def plot_experience_graph(self, col, job_role):
-        year, month = self.get_date()
-        # load data
-        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
-            data = json.load(jsonFile)
-        # plotly
         with col:
             col.header('Experience')
-            y_key = [y_key for y_key in data[job_role][year][month]['experience'].keys()]
-            x_val = [x_val for x_val in data[job_role][year][month]['experience'].values()]
+            y_label, x_label = self.get_data(job_role, 'experience')
+            y_key = y_label
+            x_val = x_label
             fig = go.Figure(go.Bar(
                 # x=x_label,
                 y=y_label,
@@ -174,3 +202,15 @@ class Dashboard:
         year = now.strftime('%Y')
         month = now.strftime('%m')
         return year, month
+
+    def get_data(self, job_role: str, data_field: str):
+        year, month = self.get_date()
+        # Load data
+        with open(DASH_DATA_TARGET_FILE, 'r') as jsonFile:
+            data = json.load(jsonFile)
+
+        y_label = [key for key in data[job_role][year][month][data_field].keys()]
+        x_label = [val for val in data[job_role][year][month][data_field].values()]
+
+        return y_label, x_label
+
