@@ -69,7 +69,7 @@ for i in range(0, len(df)):
 
 locations = {}
 for i in range(0, len(df['features'])):
-    country = df['features'][i]['properties']['name'].lower()
+    country = df['features'][i]['properties']['name']
     locations[country] = {'keyword_count': 0}
 
 print(locations)

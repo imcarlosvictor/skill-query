@@ -94,11 +94,11 @@ class Dashboard:
             country_polygon_coord.append(geo_json_data_df['features'][i]['geometry']['coordinates'])
         # COUNTRIES
         df_countries = list(keyword_data_df['software_engineer'][int(year)][month]['location'].keys())
-        countries = [ country.capitalize() for country in df_countries ]
+        countries = [ country for country in df_countries ]
         # KEYWORDS
         keyword_count = []
         for country in countries:
-            keyword_count.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country.lower()]['keyword_count'])
+            keyword_count.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country]['keyword_count'])
         data = {'Country': countries , 'Keyword Count': keyword_count, 'Geometry': country_polygon_coord}
 
         # Create csv file
@@ -111,10 +111,11 @@ class Dashboard:
 
         m = folium.Map(location=[40,95], control_scale=True, zoom_start=2)
         folium.Choropleth(
-            geo_data=final_df,
+            geo_data=geoJSON_data,
             data=final_df,
-            column=['Country','Keyword Count'],
-            key_on='feature.properties.Country',
+            columns=['Country','Keyword Count'],
+            key_on='feature.properties.name',
+            fill_color='OrRd',
             name='Job Posting Distribution',
             legend_name='Number of Job Openings',
         ).add_to(m)

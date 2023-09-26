@@ -49,17 +49,28 @@ def keyword_parser(argv):
 
     # Create count for country
     for i in range(1, len(scraped_data)):
+        if scraped_data[i]['location'].title() in keywords['location'].keys():
+            keywords['location'][word.title()]['keyword_count'] += 1
+            continue
+        if scraped_data[i]['location'].title() == 'United States':
+            keywords['location']['United States of America']['keyword_count'] += 1
+            continue
         for word in scraped_data[i]['location'].split(', '):
-            if word.lower() in keywords['location'].keys():
-                keywords['location'][word.lower()]['keyword_count'] += 1
-                continue
             if word.lower() in keywords['usa_states']:
                 keywords['usa_states'][word.lower()] += 1
             if word.lower() in keywords['canada_provinces']:
                 keywords['canada_provinces'][word.lower()] += 1
+
+            # if word.capitalize() in keywords['location'].keys():
+            #     keywords['location'][word.capitalize()]['keyword_count'] += 1
+            #     continue
+        #     if word.capitalize() in keywords['usa_states']:
+        #         keywords['usa_states'][word.capitalize()] += 1
+        #     if word.capitalize() in keywords['canada_provinces']:
+        #         keywords['canada_provinces'][word.capitalize()] += 1
     # combine the total of use_states and the total count of usa states found
-    keywords['location']['united states']['keyword_count'] += sum(keywords['usa_states'].values())
-    keywords['location']['canada']['keyword_count'] += sum(keywords['canada_provinces'].values())
+    keywords['location']['United States of America']['keyword_count'] += sum(keywords['usa_states'].values())
+    keywords['location']['Canada']['keyword_count'] += sum(keywords['canada_provinces'].values())
 
     # Add transformed data to dashboard data file
     keyword_file_path = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/keyword_data.json'))
