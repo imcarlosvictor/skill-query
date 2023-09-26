@@ -54,12 +54,22 @@ keyword_data = pd.read_json(KEYWORD_FILE)
 
 import requests
 
-response = requests.get('http://geojson.xyz/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson')
-geo_data = response.json()
+# response = requests.get('http://geojson.xyz/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson')
+# geo_data = response.json()
+
+geoJSON_data = requests.get('https://raw.githubusercontent.com/python-visualization/folium-example-data/main/world_countries.json').json()
+
+df = pd.DataFrame(geoJSON_data)
+# print(df.head())
+
+
+# print(type(df['features'][0]['properties']))
+for i in range(0, len(df)):
+    print(df['features'][i]['properties']['name'])
 
 locations = {}
-for i in range(0, len(geo_data['features'])):
-    country = geo_data['features'][i]['properties']['name'].lower()
+for i in range(0, len(df['features'])):
+    country = df['features'][i]['properties']['name'].lower()
     locations[country] = {'keyword_count': 0}
 
 print(locations)
@@ -68,6 +78,7 @@ with open(SEARCH_POOL_FILE, 'r') as jsonFile:
     keywords = json.load(jsonFile)
 
 keywords['location'] = locations
+print(len(keywords['location'].keys()))
 
 with open(SEARCH_POOL_FILE, 'w') as jsonFile:
     json.dump(keywords, jsonFile)

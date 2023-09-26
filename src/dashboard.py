@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import requests
 import folium
 import streamlit as st
 import pandas as pd
@@ -22,6 +23,7 @@ from scrapy_spiders.scrapy_spiders.spiders.da_post_spider import DataAnalystPost
 
 FILENAME = __file__
 DIRECTORY_PATH = os.path.abspath(os.path.dirname(__file__))
+GEO_DATA_RELATION_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/geo_data_relation.csv'))
 DASH_DATA_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/keyword_data.json'))
 GEO_DATA_TARGET_FILE = os.path.abspath(os.path.join(DIRECTORY_PATH, 'export_feed/dashboard_data/world_countries.json'))
 
@@ -80,47 +82,41 @@ class Dashboard:
 
     def plot_map(self):
         year, month = self.get_date()
+        # Add geoJSON
+        geoJSON_data = requests.get('https://raw.githubusercontent.com/python-visualization/folium-example-data/main/world_countries.json').json()
 
-        # Plot polygons on folium map
-        geo_data = ('http://geojson.xyz/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson')
-        # Plot data
+        # Plot data onto csv file
+        geo_json_data_df = pd.DataFrame(geoJSON_data)
         keyword_data_df= pd.read_json(DASH_DATA_TARGET_FILE)
-        countries_pd = list(keyword_data_df['software_engineer'][int(year)][month]['location'].keys())
-        countries_pd = [ country.capitalize() for country in countries_pd ]
-        country_keyword_count_pd = []
-        for country in countries_pd:
-            country_keyword_count_pd.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country.lower()]['keyword_count'])
+        # POLYGON
+        country_polygon_coord = []
+        for i in range(0, len(geo_json_data_df)):
+            country_polygon_coord.append(geo_json_data_df['features'][i]['geometry']['coordinates'])
+        # COUNTRIES
+        df_countries = list(keyword_data_df['software_engineer'][int(year)][month]['location'].keys())
+        countries = [ country.capitalize() for country in df_countries ]
+        # KEYWORDS
+        keyword_count = []
+        for country in countries:
+            keyword_count.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country.lower()]['keyword_count'])
+        data = {'Country': countries , 'Keyword Count': keyword_count, 'Geometry': country_polygon_coord}
 
-        zip_countries_keywordcount = list(zip(countries_pd, country_keyword_count_pd))
-        for c,k in zip_countries_keywordcount:
-            print(f'{c} || {k}')
-        # print(zip_countries_keywordcount)
-        # print(type(zip_countries_keywordcount))
-        # print(country_keyword_count_pd)
-        # print(zip_countries_keywordcount)
+        # Create csv file
+        df = pd.DataFrame(data)
+        df.to_csv(GEO_DATA_RELATION_TARGET_FILE, index=False)
+        df_read_csv = pd.read_csv(GEO_DATA_RELATION_TARGET_FILE)
+        final_df = pd.DataFrame(df_read_csv)
+        print('########################################')
+        print(final_df)
 
-        # data = {'countries': countries_pd , 'values': country_keyword_count_pd}
-        # print(type(countries_pd))
-        # print(type(country_keyword_count_pd))
-
-        # for key,val in data.items():
-        #     for v in data[key]:
-        #         if pd.isnull(v):
-        #             print('True')
-        #     for v in data[val]:
-        #         if pd.isnull(v):
-        #             print('True')
-
-        m = folium.Map(location=[40,80], control_scale=True, zoom_start=2)
+        m = folium.Map(location=[40,95], control_scale=True, zoom_start=2)
         folium.Choropleth(
-            geo_data=geo_data,
-            # data=data,
-            column=[countries_pd, country_keyword_count_pd],
-            key_on='feature.properties.name',
-            fill_color='OrRd',
-            line_color='#0000',
+            geo_data=final_df,
+            data=final_df,
+            column=['Country','Keyword Count'],
+            key_on='feature.properties.Country',
             name='Job Posting Distribution',
-            legend_name='Job Openings',
+            legend_name='Number of Job Openings',
         ).add_to(m)
         st_data = st_folium(m, width=1900)
 
