@@ -54,6 +54,10 @@ class Dashboard:
             ('2023',)
         )
 
+        month_option = st.sidebar.selectbox(
+            'Month',
+            ('09',)
+        )
         # show_btn = st.sidebar.button('Show', use_container_width=True)
 
 
@@ -66,7 +70,7 @@ class Dashboard:
 
         top_container = st.container()
         with top_container:
-            self.plot_map()
+            self.plot_map(role, year_option, month_option)
 
         mid_container = st.container()
         with mid_container:
@@ -80,8 +84,8 @@ class Dashboard:
             # self.plot_experience_graph(col5)
             self.plot_education_graph(col6, role)
 
-    def plot_map(self):
-        year, month = self.get_date()
+    def plot_map(self, job_role, year, month):
+        # year, month = self.get_date()
         # Add geoJSON
         geoJSON_data = requests.get('https://raw.githubusercontent.com/python-visualization/folium-example-data/main/world_countries.json').json()
 
@@ -93,12 +97,12 @@ class Dashboard:
         for i in range(0, len(geo_json_data_df)):
             country_polygon_coord.append(geo_json_data_df['features'][i]['geometry']['coordinates'])
         # COUNTRIES
-        df_countries = list(keyword_data_df['software_engineer'][int(year)][month]['location'].keys())
+        df_countries = list(keyword_data_df[job_role][int(year)][month]['location'].keys())
         countries = [ country for country in df_countries ]
         # KEYWORDS
         keyword_count = []
         for country in countries:
-            keyword_count.append(keyword_data_df['software_engineer'][int(year)][month]['location'][country]['keyword_count'])
+            keyword_count.append(keyword_data_df[job_role][int(year)][month]['location'][country]['keyword_count'])
         data = {'Country': countries , 'Keyword Count': keyword_count, 'Geometry': country_polygon_coord}
 
         # Create csv file
@@ -106,8 +110,6 @@ class Dashboard:
         df.to_csv(GEO_DATA_RELATION_TARGET_FILE, index=False)
         df_read_csv = pd.read_csv(GEO_DATA_RELATION_TARGET_FILE)
         final_df = pd.DataFrame(df_read_csv)
-        print('########################################')
-        print(final_df)
 
         m = folium.Map(location=[40,95], control_scale=True, zoom_start=2)
         folium.Choropleth(
@@ -115,7 +117,7 @@ class Dashboard:
             data=final_df,
             columns=['Country','Keyword Count'],
             key_on='feature.properties.name',
-            fill_color='OrRd',
+            fill_color='YlGn',
             name='Job Posting Distribution',
             legend_name='Number of Job Openings',
         ).add_to(m)
@@ -138,7 +140,7 @@ class Dashboard:
             fig.update_xaxes(visible=False)
             fig.update_yaxes(categoryorder='total ascending')
             fig.update_layout(height=600,margin={'t':0,'b':.7})
-            fig.update_traces(marker_color='#ff0044')
+            fig.update_traces(marker_color='#21e05c')
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     def plot_framework_graph(self, col, job_role):
@@ -158,7 +160,7 @@ class Dashboard:
             fig.update_xaxes(visible=False)
             fig.update_yaxes(categoryorder='total ascending')
             fig.update_layout(height=600,margin={'t':0})
-            fig.update_traces(marker_color='#ff0044')
+            fig.update_traces(marker_color='#21e05c')
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
 
     # TODO:
@@ -168,7 +170,7 @@ class Dashboard:
             y_label, x_label = self.get_data(job_role, 'education')
             names = y_label
             values = x_label
-            fig = px.pie(values=values, names=names, color_discrete_sequence=px.colors.sequential.RdBu)
+            fig = px.pie(values=values, names=names, color_discrete_sequence=px.colors.sequential.RdPu)
             fig.update_layout(legend_title=False)
             fig.update_traces(textposition='inside', textinfo='percent+label', showlegend=False)
             st.plotly_chart(fig, theme='streamlit', use_container_width=True)
